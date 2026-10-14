@@ -45,9 +45,9 @@ test("every local asset referenced by the landing exists", () => {
 
 test("calls to action open the app and each feature card opens its tab", () => {
   const { document } = loadLanding();
-  const appLinks = [...document.querySelectorAll('a[href="app/"]')];
+  const appLinks = [...document.querySelectorAll('a[href="app/index.html"]')];
   assert.ok(appLinks.length >= 3);
   const cardLinks = [...document.querySelectorAll(".cards4 a.cl")].map((a) => a.getAttribute("href"));
-  assert.deepEqual(cardLinks, ["app/#dashboards", "app/#brain", "app/#simulacoes", "app/#transparencia"]);
+  assert.deepEqual(cardLinks, ["app/index.html#dashboards", "app/index.html#brain", "app/index.html#simulacoes", "app/index.html#transparencia"]);
   assert.equal(document.querySelector('a[href*="finbrain-sistema"]'), null);
 });

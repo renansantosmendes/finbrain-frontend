@@ -61,3 +61,14 @@ test("theme-color meta tag matches the --ink token", () => {
     if (meta) assert.equal(meta[1], ink, path.relative(ROOT, page));
   }
 });
+
+test("links point to files, not folders, so pages also work opened from disk", () => {
+  for (const page of PAGES) {
+    const html = fs.readFileSync(page, "utf8");
+    const folderLinks = [...html.matchAll(/href="([^"]*)"/g)]
+      .map((m) => m[1])
+      .filter((ref) => !/^(https?:|mailto:|#)/.test(ref))
+      .filter((ref) => /(^|\/)(\.\.?)?$/.test(ref.split("#")[0]));
+    assert.deepEqual(folderLinks, [], path.relative(ROOT, page) + " links to a folder");
+  }
+});
