@@ -43,6 +43,19 @@
 #app .ask-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-d)}
 #app .ask-row .ph{margin:0 6px 0 0}
 
+/* Desktop monitors: the tab fills exactly one screen height and the chart
+   takes the remaining space, drawn at its real pixel size. */
+@media (min-width:1181px) and (min-height:620px){
+  #app #tab-dashboards{height:calc(100vh - var(--stb-h,61px) - var(--tabs-h,47px) - 28px);height:calc(100dvh - var(--stb-h,61px) - var(--tabs-h,47px) - 28px);grid-template-rows:minmax(0,1fr);align-items:stretch}
+  #app #tab-dashboards .side{min-height:0;overflow-y:auto;scrollbar-width:thin}
+  #app #tab-dashboards #asset{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  #app #tab-dashboards #asset .chart.fit{flex:1;min-height:200px;position:relative;overflow:hidden}
+  #app #tab-dashboards #asset .chart.fit svg{position:absolute;inset:0}
+  #app #tab-dashboards #asset .dtab-wrap{flex:1;max-height:none;min-height:0}
+}
+#app .chart svg.fluid text{font-size:12px}
+#app .chart svg.fluid .tag-t{font-size:12px}
+
 @media (max-width:1180px){
   #tab-dashboards{grid-template-columns:minmax(0,1fr)}
   #tab-dashboards .side{flex-direction:row;overflow-x:auto}

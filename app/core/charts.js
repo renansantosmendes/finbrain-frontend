@@ -5,6 +5,9 @@
  *
  * `options.compact` draws a narrower geometry (fewer axis labels, larger
  * text) for phones, so the charts fit the screen without horizontal scroll.
+ * `options.size` ({ width, height } in CSS pixels) draws the candles at the
+ * real size of their box, one SVG unit per pixel, so the chart fills any
+ * monitor while the text keeps the same size.
  */
 (function (root, factory) {
   var FB = (root.FB = root.FB || {});
@@ -16,31 +19,42 @@
   var fmt = format.fmt, dmy = format.dmy, esc = format.esc;
 
   var CANDLE_GEOMETRY = {
-    wide: { W: 960, H: 380, x1: 868, y1: 330, tag: 86, xLabels: 7 },
-    compact: { W: 560, H: 430, x1: 452, y1: 372, tag: 104, xLabels: 4 },
+    wide: { W: 960, H: 380, x0: 6, x1: 868, y0: 20, y1: 330, tag: 86, tagH: 30, dy: 6, bottom: 18, xLabels: 7 },
+    compact: { W: 560, H: 430, x0: 6, x1: 452, y0: 20, y1: 372, tag: 104, tagH: 30, dy: 6, bottom: 18, xLabels: 4 },
   };
+  var MIN_FLUID_SIZE = { width: 320, height: 200 };
+
+  function candleGeometry(options) {
+    var size = options && options.size;
+    if (size && size.width >= MIN_FLUID_SIZE.width && size.height >= MIN_FLUID_SIZE.height) {
+      var W = Math.round(size.width), H = Math.round(size.height);
+      return { W: W, H: H, x0: 4, x1: W - 70, y0: 12, y1: H - 30, tag: 64, tagH: 20, dy: 4, bottom: 10, xLabels: Math.max(3, Math.floor(W / 110)), fluid: true };
+    }
+    return CANDLE_GEOMETRY[options && options.compact ? "compact" : "wide"];
+  }
   var FAN_GEOMETRY = {
     wide: { W: 960, H: 330, x1: 840, y1: 288, yearLabels: 6 },
     compact: { W: 560, H: 400, x1: 470, y1: 350, yearLabels: 3 },
   };
 
-  function svgClass(options) {
+  function svgClass(options, geometry) {
+    if (geometry && geometry.fluid) return ' class="fluid" width="' + geometry.W + '" height="' + geometry.H + '"';
     return options && options.compact ? ' class="compact"' : "";
   }
 
   function candles(data, dates, unit, decimals, label, options) {
-    var g = CANDLE_GEOMETRY[options && options.compact ? "compact" : "wide"];
-    var W = g.W, H = g.H, x0 = 6, x1 = g.x1, y0 = 20, y1 = g.y1, n = data.length, hi = -1e12, lo = 1e12;
+    var g = candleGeometry(options);
+    var W = g.W, H = g.H, x0 = g.x0, x1 = g.x1, y0 = g.y0, y1 = g.y1, n = data.length, hi = -1e12, lo = 1e12;
     data.forEach(function (v) { hi = Math.max(hi, v[1]); lo = Math.min(lo, v[2]); });
     var pad = (hi - lo) * 0.08;
     hi += pad;
     lo -= pad;
     function ys(v) { return y1 - (v - lo) / (hi - lo) * (y1 - y0); }
     var slot = (x1 - x0) / n, bw = Math.max(slot * 0.56, 1.4);
-    var p = ["<svg" + svgClass(options) + ' viewBox="0 0 ' + W + " " + H + '" role="group" aria-label="' + esc(label) + '">'];
+    var p = ["<svg" + svgClass(options, g) + ' viewBox="0 0 ' + W + " " + H + '" role="group" aria-label="' + esc(label) + '">'];
     for (var t = 0; t < 5; t++) {
       var v = lo + (hi - lo) * t / 4, y = ys(v);
-      p.push('<line class="gl" x1="' + x0 + '" x2="' + x1 + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text x="' + (x1 + 8) + '" y="' + (y + 6).toFixed(1) + '">' + fmt(v, decimals) + "</text>");
+      p.push('<line class="gl" x1="' + x0 + '" x2="' + x1 + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text x="' + (x1 + 8) + '" y="' + (y + g.dy).toFixed(1) + '">' + fmt(v, decimals) + "</text>");
     }
     var cl = market.closes(data);
     function line(k, cls) {
@@ -64,10 +78,10 @@
     p.push(line(20, "ma20"));
     p.push(line(5, "ma5"));
     var last = cl[n - 1], ly = ys(last);
-    p.push('<line class="last-l" x1="' + x0 + '" x2="' + x1 + '" y1="' + ly.toFixed(1) + '" y2="' + ly.toFixed(1) + '"/><rect class="tag-bg" x="' + (x1 + 3) + '" y="' + (ly - 15).toFixed(1) + '" width="' + g.tag + '" height="30"/><text class="tag-t" x="' + (x1 + 8) + '" y="' + (ly + 6).toFixed(1) + '">' + fmt(last, decimals) + "</text>");
+    p.push('<line class="last-l" x1="' + x0 + '" x2="' + x1 + '" y1="' + ly.toFixed(1) + '" y2="' + ly.toFixed(1) + '"/><rect class="tag-bg" x="' + (x1 + 3) + '" y="' + (ly - g.tagH / 2).toFixed(1) + '" width="' + g.tag + '" height="' + g.tagH + '"/><text class="tag-t" x="' + (x1 + 8) + '" y="' + (ly + g.dy).toFixed(1) + '">' + fmt(last, decimals) + "</text>");
     var step = Math.max(1, Math.floor(n / g.xLabels));
     for (var i = 0; i < n; i += step) {
-      p.push('<text x="' + (x0 + (i + 0.5) * slot).toFixed(1) + '" y="' + (H - 18) + '" text-anchor="middle">' + dmy(dates[i]) + "</text>");
+      p.push('<text x="' + (x0 + (i + 0.5) * slot).toFixed(1) + '" y="' + (H - g.bottom) + '" text-anchor="' + (i === 0 && g.fluid ? "start" : "middle") + '">' + dmy(dates[i]) + "</text>");
     }
     p.push("</svg>");
     return p.join("");

@@ -69,3 +69,13 @@ test("charts use classes for colors, never inline color values", () => {
   assert.equal((svg.match(/class="cd /g) || []).length, 21);
   assert.match(charts.candleTable(s.d, s.t, 2), /<th>Fechamento<\/th>/);
 });
+
+test("candles can be drawn at the real pixel size of their box", () => {
+  const asset = market.findAsset("PETR4");
+  const s = market.slice(asset, 63);
+  const svg = charts.candles(s.d, s.t, asset.u, asset.d, "teste", { size: { width: 1500, height: 520 } });
+  assert.match(svg, /<svg class="fluid" width="1500" height="520" viewBox="0 0 1500 520"/);
+  assert.equal((svg.match(/class="cd /g) || []).length, 63);
+  const tooSmall = charts.candles(s.d, s.t, asset.u, asset.d, "teste", { size: { width: 100, height: 80 } });
+  assert.match(tooSmall, /viewBox="0 0 960 380"/);
+});

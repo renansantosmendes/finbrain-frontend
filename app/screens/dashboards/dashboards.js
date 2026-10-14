@@ -7,7 +7,28 @@
   var FB = root.FB;
   var fmt = FB.format.fmt, pc = FB.format.pc, arrow = FB.format.arrow, trend = FB.format.trend, esc = FB.format.esc;
   var market = FB.market, state = FB.state;
-  var panel;
+  var panel, chart = null, drawnKey = "";
+  var FALLBACK_RATIO = 0.42, MIN_CHART_HEIGHT = 260, MAX_CHART_HEIGHT = 520;
+
+  function chartSize(box) {
+    if (FB.layout.compact()) return null;
+    var width = box.clientWidth;
+    if (!width) return null;
+    var height = FB.layout.fitsScreen()
+      ? box.clientHeight
+      : Math.round(Math.min(MAX_CHART_HEIGHT, Math.max(MIN_CHART_HEIGHT, width * FALLBACK_RATIO)));
+    return { width: width, height: height };
+  }
+
+  function drawChart(force) {
+    var box = panel.querySelector("#asset .chart");
+    if (!box || !chart) return;
+    var size = chartSize(box), compact = FB.layout.compact();
+    var key = chart.key + "|" + compact + "|" + (size ? size.width + "x" + size.height : "default");
+    if (!force && key === drawnKey) return;
+    drawnKey = key;
+    box.innerHTML = FB.charts.candles(chart.data, chart.dates, chart.unit, chart.decimals, chart.label, { compact: compact, size: size });
+  }
 
   function renderWatchlist() {
     var data = state.data;
@@ -53,11 +74,13 @@
       '<label class="ck"><input type="checkbox" data-ma="ma20"' + (data.ma20 ? " checked" : "") + "> Média 20d</label>" +
       '<button class="tbtn" type="button" data-act="tbl" aria-expanded="' + data.showTable + '">' + (data.showTable ? "Ver como gráfico" : "Ver como tabela") + "</button></div></div>" +
       '<div class="legend" style="margin-top:10px"><span><i class="lg-up" style="--c:var(--up)"></i>▲ Alta no dia</span><span><i class="lg-dn" style="--c:var(--dn)"></i>▼ Queda no dia</span><span><i class="lg-ma" style="--ma:var(--tx-d)"></i>Média 5d</span><span><i style="width:18px;border-top:2px dashed var(--teal-l);height:0"></i>Média 20d</span></div>' +
-      '<div class="chart dark ' + chartClass + '"' + (data.showTable ? " hidden" : "") + ">" + FB.charts.candles(s.d, s.t, a.u, a.d, "Candles diários de " + a.s + " no período de " + data.rng, { compact: FB.layout.compact() }) + "</div>" +
+      '<div class="chart dark ' + chartClass + (FB.layout.fitsScreen() ? " fit" : "") + '"' + (data.showTable ? " hidden" : "") + "></div>" +
       '<div class="dtab-wrap"' + (data.showTable ? "" : " hidden") + ">" + FB.charts.candleTable(s.d, s.t, a.d) + "</div>" +
       '<div class="stat"><div><span>Abertura (dia)</span><b>' + fmt(lastCandle[0], a.d) + "</b></div><div><span>Máx. do período</span><b>" + fmt(hi, a.d) + "</b></div><div><span>Mín. do período</span><b>" + fmt(lo, a.d) + "</b></div><div><span>Volatilidade 30d</span><b>" + fmt(market.volAnn(market.closes(a.data), 30), 1) + "%</b></div><div><span>Queda máx. (" + data.rng + ')</span><b class="d">' + fmt(market.maxDrawdown(cl), 1) + "%</b></div><div><span>Variação (" + data.rng + ')</span><b class="' + trend(change) + '">' + pc(change, 1) + "</b></div></div>" +
       '<div class="ask-row"><span class="ph">Perguntar ao Brain</span>' + suggestions + "</div>" +
       '<p class="fine">Série gerada para o protótipo. Não são cotações reais.</p>';
+    chart = { key: a.s + data.rng, data: s.d, dates: s.t, unit: a.u, decimals: a.d, label: "Candles diários de " + a.s + " no período de " + data.rng };
+    drawChart(true);
     renderWatchlist();
   }
 
@@ -73,6 +96,13 @@
     renderAsset();
     state.on("asset", renderAsset);
     FB.layout.onChange(renderAsset);
+    FB.layout.onFitChange(renderAsset);
+    if (root.ResizeObserver) {
+      new root.ResizeObserver(function () { root.requestAnimationFrame(function () { drawChart(false); }); }).observe(panel.querySelector("#asset"));
+    }
+    FB.state.on("tab", function (name) {
+      if (name === "dashboards") drawChart(false);
+    });
 
     panel.addEventListener("click", function (event) {
       var target = event.target.closest("[data-rng],[data-act],tr[data-sym],[data-ask]");

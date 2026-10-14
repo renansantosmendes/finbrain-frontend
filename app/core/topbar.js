@@ -33,8 +33,10 @@
       search.value = "";
     });
 
+    var tabs = document.querySelector(".tabs");
     function syncHeight() {
       document.documentElement.style.setProperty("--stb-h", header.offsetHeight + "px");
+      if (tabs) document.documentElement.style.setProperty("--tabs-h", tabs.offsetHeight + "px");
     }
     syncHeight();
     window.addEventListener("resize", syncHeight);
