@@ -1,0 +1,62 @@
+/* Dashboards tab: watchlist, Brazil macro panel and the asset chart. */
+#tab-dashboards{grid-template-columns:272px minmax(0,1fr)}
+
+#app .wlt{width:100%;border-collapse:collapse;font-size:13.5px}
+#app .wlt th{text-align:left;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--mut-d);padding:4px 6px 8px;font-weight:500}
+#app .wlt th.r,#app .wlt td.r{text-align:right}
+#app .wlt tbody tr{cursor:pointer;border-top:1px solid var(--line-d)}
+#app .wlt tbody tr:hover{background:color-mix(in srgb,var(--white) 4%,transparent)}
+#app .wlt tbody tr[aria-selected="true"]{background:color-mix(in srgb,var(--teal) 16%,transparent);box-shadow:inset 3px 0 0 var(--teal-l)}
+#app .wlt td{padding:9px 6px;vertical-align:middle}
+#app .wlt .sy{font-weight:700;color:var(--white)}
+#app .wlt .sy small{display:block;font-weight:400;color:var(--mut-d);font-size:11.5px}
+#app .wlt td.r{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:var(--tx-d);white-space:nowrap}
+#app .wlt td.r.u{color:var(--up)}
+#app .wlt td.r.d{color:var(--dn)}
+#app .wlt tr:focus-visible{outline:2px solid var(--teal-l);outline-offset:-2px}
+
+#app .spark{display:block;margin-left:auto}
+#app .spark polyline{fill:none;stroke-width:1.6}
+#app .spark.up polyline{stroke:var(--up)}
+#app .spark.dn polyline{stroke:var(--dn)}
+
+#app .mc{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line-d);font-size:13.5px}
+#app .mc:first-child{border-top:0}
+#app .mc b{font-family:'JetBrains Mono',monospace;color:var(--white)}
+#app .mc small{display:block;color:var(--mut-d);font-size:11.5px}
+
+#app .ah h1{font-size:22px;line-height:1.1}
+#app .ah h1 small{font-weight:400;color:var(--mut-d);font-size:14px;margin-left:8px}
+#app .px{display:flex;align-items:baseline;gap:12px;margin-top:8px;flex-wrap:wrap}
+#app .px b{font-family:'JetBrains Mono',monospace;font-size:30px;color:var(--white)}
+#app .px span{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
+#app .chart .ma20{stroke:var(--teal-l);stroke-dasharray:7 5;stroke-dashoffset:0}
+#app .no5 .ma5,#app .no20 .ma20{display:none}
+#app .dense .cd .wick{stroke-width:1}
+#app .dense .cd .body{stroke-width:1}
+#app .dense .cd:hover .body{stroke-width:2}
+#app .stat{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-top:1px solid var(--line-d);margin-top:6px}
+#app .stat>div{padding:10px 8px 4px;border-right:1px solid var(--line-d)}
+#app .stat>div:last-child{border-right:0}
+#app .stat span{display:block;font-size:11.5px;color:var(--mut-d)}
+#app .stat b{display:block;margin-top:3px;color:var(--white);font-size:14px;font-family:'JetBrains Mono',monospace}
+#app .ask-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-d)}
+#app .ask-row .ph{margin:0 6px 0 0}
+
+@media (max-width:1180px){
+  #tab-dashboards{grid-template-columns:minmax(0,1fr)}
+  #tab-dashboards .side{flex-direction:row;overflow-x:auto}
+  #tab-dashboards .side .pn{min-width:300px;flex:1}
+}
+@media (max-width:720px){
+  #tab-dashboards #asset{order:-1}
+  #tab-dashboards .side{flex-direction:column;overflow:visible}
+  #tab-dashboards .side .pn{min-width:0}
+  #app .stat{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #app .stat>div:nth-child(2n){border-right:0}
+  #app .stat>div:nth-child(-n+4){border-bottom:1px solid var(--line-d)}
+  #app .px b{font-size:26px}
+  #app .ah h1 small{display:block;margin:4px 0 0}
+  #app .ask-row .ph{flex-basis:100%;margin:0 0 2px}
+  #app .ask-row .chp{flex:1 1 100%}
+}

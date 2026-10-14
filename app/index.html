@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06161F">
+<title>FinBrain · Sistema (V0)</title>
+<meta name="description" content="Dashboards de mercado, o agente Brain, simulações de aporte e a trilha de transparência do FinBrain.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="../assets/img/finbrain-logo.png">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="screens/dashboards/dashboards.css">
+<link rel="stylesheet" href="screens/brain/brain.css">
+<link rel="stylesheet" href="screens/simulacoes/simulacoes.css">
+<link rel="stylesheet" href="screens/transparencia/transparencia.css">
+</head>
+<body style="background:var(--ink)">
+<div id="app">
+
+  <header class="stb">
+    <a class="logo" href="../" aria-label="FinBrain, voltar à página inicial"><img src="../assets/img/finbrain-logo.png" alt="" width="34" height="34" style="display:block"><div><b>FinBrain</b><span>V0 · uso livre</span></div></a>
+    <div class="sch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="sq" list="syms" placeholder="Buscar ativo (PETR4, VALE3, IBOV…)" aria-label="Buscar ativo" autocomplete="off"><datalist id="syms"></datalist></div>
+    <div class="mini" id="mini" aria-label="Indicadores de exemplo"></div>
+    <div class="bdg" title="Protótipo: as séries são geradas e não são cotações reais">Mock · dados ilustrativos</div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Funcionalidades do FinBrain">
+    <button class="tab" role="tab" id="tabbtn-dashboards" aria-controls="tab-dashboards" aria-selected="true" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Dashboards</button>
+    <button class="tab" role="tab" id="tabbtn-brain" aria-controls="tab-brain" aria-selected="false" tabindex="-1" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Brain</button>
+    <button class="tab" role="tab" id="tabbtn-simulacoes" aria-controls="tab-simulacoes" aria-selected="false" tabindex="-1" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18c4-10 8 4 16-12"/><circle cx="4" cy="18" r="1.5"/><circle cx="20" cy="6" r="1.5"/></svg>Simulações</button>
+    <button class="tab" role="tab" id="tabbtn-transparencia" aria-controls="tab-transparencia" aria-selected="false" tabindex="-1" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Transparência <span class="cnt" data-zero aria-label="chamadas registradas">0</span></button>
+  </nav>
+
+  <main class="stage">
+
+    <section class="tabpanel" id="tab-dashboards" role="tabpanel" aria-labelledby="tabbtn-dashboards" tabindex="0">
+      <aside class="col side">
+        <section class="pn"><h2 class="ph">Watchlist</h2><div class="tw"><table class="wlt"><caption class="sr">Lista de ativos acompanhados</caption><thead><tr><th>Ativo</th><th class="r">Último</th><th class="r">Dia</th></tr></thead><tbody id="wlb"></tbody></table></div></section>
+        <section class="pn"><h2 class="ph">Brasil · macro</h2><div id="macro"></div></section>
+      </aside>
+      <section class="pn" id="asset" aria-label="Gráfico do ativo"></section>
+    </section>
+
+    <section class="tabpanel" id="tab-brain" role="tabpanel" aria-labelledby="tabbtn-brain" tabindex="0" hidden>
+      <section class="pn chat" aria-label="Conversa com o Brain">
+        <div class="bh"><div><h2 class="ph" style="margin:0">Brain</h2><div class="bs">Informa e simula · não recomenda</div></div></div>
+        <div class="bm" id="bm" aria-live="polite"></div>
+        <div class="bc" id="bc"></div>
+        <form class="bf" id="bf"><textarea id="bq" rows="1" aria-label="Pergunte ao Brain" placeholder="Pergunte sobre o ativo, a economia ou uma simulação…"></textarea><button class="btn btn-t btn-sm" id="bsend" type="submit">Enviar</button></form>
+        <p class="bd">Informativo. Não é recomendação de investimento. Séries ilustrativas.</p>
+      </section>
+      <aside class="col">
+        <section class="pn"><h2 class="ph">Ativo em foco</h2><div id="ctxAsset"></div></section>
+        <section class="pn"><h2 class="ph">Simulação atual</h2><div id="ctxSim"></div></section>
+        <section class="pn"><h2 class="ph">Trilha</h2><div id="ctxTrail"></div></section>
+        <section class="pn">
+          <h2 class="ph">Escopo do Brain</h2>
+          <ul class="scope yes"><li>Busca dados e explica variações</li><li>Simula cenários com hipóteses visíveis</li><li>Diz quando não tem dado</li></ul>
+          <ul class="scope no" style="margin-top:12px"><li>Não recomenda comprar ou vender</li><li>Não executa ordens</li></ul>
+        </section>
+      </aside>
+    </section>
+
+    <section class="tabpanel" id="tab-simulacoes" role="tabpanel" aria-labelledby="tabbtn-simulacoes" tabindex="0" hidden>
+      <section class="pn" id="sim" aria-label="Simulação de aporte mensal"></section>
+      <aside class="pn guide">
+        <h2 class="ph">Como ler a simulação</h2>
+        <dl>
+          <dt>Faixa provável (P10 a P90)</dt>
+          <dd>Em 80% das 400 trajetórias simuladas, o patrimônio terminou dentro dessa faixa.</dd>
+          <dt>Cenário mediano (P50)</dt>
+          <dd>Metade das trajetórias terminou acima e metade abaixo desse valor.</dd>
+          <dt>Total aportado</dt>
+          <dd>Soma do valor inicial com todos os aportes mensais, sem rendimento.</dd>
+          <dt>Retorno real</dt>
+          <dd>Rendimento já descontada a inflação: os valores estão em reais de hoje.</dd>
+        </dl>
+        <p class="fine">Passe o mouse ou navegue pelo teclado no gráfico para ver os valores de cada ano.</p>
+      </aside>
+    </section>
+
+    <section class="tabpanel" id="tab-transparencia" role="tabpanel" aria-labelledby="tabbtn-transparencia" tabindex="0" hidden>
+      <section class="pn">
+        <h2 class="ph">Trilha de chamadas</h2>
+        <p class="pn-lead">Cada resposta do Brain registra as ferramentas que usou: fonte, parâmetros, horário da consulta e uma impressão digital (hash) da chamada.</p>
+        <div class="trail-sum" id="trailSum"></div>
+        <div id="trailBody"></div>
+      </section>
+      <section class="pn">
+        <h2 class="ph">O que o FinBrain faz e não faz</h2>
+        <div class="scope-g">
+          <div><h3>O que faz</h3><ul class="scope yes"><li>Mostra dados públicos de mercado e indicadores do Brasil</li><li>Explica variações e conceitos em linguagem simples</li><li>Simula cenários com hipóteses visíveis</li><li>Registra a fonte e o horário de cada consulta</li></ul></div>
+          <div><h3>O que não faz</h3><ul class="scope no"><li>Não recomenda comprar, vender ou manter ativos</li><li>Não executa ordens nem acessa corretoras</li><li>Não promete retorno nem prevê preços</li></ul></div>
+        </div>
+        <p class="fine">Os dados vêm de fontes públicas e podem ter atraso ou falhas. Nesta V0 as séries são ilustrativas. O conteúdo é informativo e não constitui recomendação de investimento.</p>
+      </section>
+    </section>
+
+  </main>
+  <div class="tip" id="tip" hidden></div>
+</div>
+
+<script src="core/format.js"></script>
+<script src="core/layout.js"></script>
+<script src="core/market-data.js"></script>
+<script src="core/simulation-engine.js"></script>
+<script src="core/charts.js"></script>
+<script src="core/state.js"></script>
+<script src="core/tooltip.js"></script>
+<script src="core/tabs.js"></script>
+<script src="core/topbar.js"></script>
+<script src="screens/brain/brain-engine.js"></script>
+<script src="screens/dashboards/dashboards.js"></script>
+<script src="screens/simulacoes/simulacoes.js"></script>
+<script src="screens/brain/brain.js"></script>
+<script src="screens/transparencia/transparencia.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

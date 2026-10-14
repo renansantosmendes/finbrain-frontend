@@ -1,0 +1,44 @@
+/*
+ * Top bar of the central screen: indicators strip and the asset search.
+ * Picking an asset in the search selects it and opens the Dashboards tab.
+ */
+(function (root) {
+  "use strict";
+  var FB = root.FB;
+  var fmt = FB.format.fmt, arrow = FB.format.arrow, trend = FB.format.trend;
+
+  function indicator(asset, label) {
+    var day = FB.market.dayChange(asset);
+    return '<span><span class="k">' + label + '</span><span class="v">' + fmt(FB.market.lastClose(asset), asset.d) + '</span><span class="c ' + trend(day) + '">' + arrow(day) + " " + fmt(Math.abs(day), 2) + "%</span></span>";
+  }
+
+  function init(header) {
+    var macro = FB.market.MACRO;
+    header.querySelector("#mini").innerHTML =
+      indicator(FB.market.findAsset("IBOV"), "IBOV") +
+      indicator(FB.market.findAsset("USD/BRL"), "USD/BRL") +
+      '<span><span class="k">Selic</span><span class="v">' + fmt(macro.selic, 2) + "%</span></span>" +
+      '<span><span class="k">IPCA 12m</span><span class="v">' + fmt(macro.ipca, 1) + "%</span></span>";
+
+    header.querySelector("#syms").innerHTML = FB.market.ASSETS.map(function (asset) {
+      return '<option value="' + asset.s + '">' + FB.format.esc(asset.n) + "</option>";
+    }).join("");
+
+    var search = header.querySelector("#sq");
+    search.addEventListener("change", function () {
+      var asset = FB.market.searchAsset(search.value);
+      if (!asset) return;
+      FB.state.setAsset({ sym: asset.s });
+      FB.tabs.open("dashboards");
+      search.value = "";
+    });
+
+    function syncHeight() {
+      document.documentElement.style.setProperty("--stb-h", header.offsetHeight + "px");
+    }
+    syncHeight();
+    window.addEventListener("resize", syncHeight);
+  }
+
+  FB.topbar = { init: init };
+})(typeof self !== "undefined" ? self : globalThis);

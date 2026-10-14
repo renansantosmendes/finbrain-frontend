@@ -1,0 +1,15 @@
+{
+  "name": "finbrain-frontend",
+  "private": true,
+  "description": "FinBrain V0: landing page and the central screen with tabs (static, no build).",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "serve": "npx --yes serve -l 5500 ."
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

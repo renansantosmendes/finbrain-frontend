@@ -1,0 +1,137 @@
+/*
+ * FinBrain design system: palette tokens and the components shared by
+ * the landing page and every screen of the app. Colors are defined only
+ * here; everything else refers to them through var(--token).
+ */
+:root{
+  /* Dark surfaces (app background, panels, top bar) */
+  --ink0:#031018;
+  --ink:#06161F;
+  --ink2:#0A222F;
+  --ink3:#0F2E3F;
+  --line-d:color-mix(in srgb,var(--white) 12%,transparent);
+  /* Brand teal */
+  --teal-d:#0B6571;
+  --teal:#14A9B9;
+  --teal-l:#3AC7D6;
+  --teal-xl:#6FD8E4;
+  --teal-w:#E3F6F8;
+  --on-teal:#04141C;
+  /* Text on dark surfaces, from strongest to most muted */
+  --white:#FFFFFF;
+  --head-d:#F1F6F8;
+  --tip-tx:#E8F1F5;
+  --tx-d:#E3EEF3;
+  --tx-d0:#D3E1E8;
+  --tx-d1:#C9D8DF;
+  --tx-d2:#B8C9D2;
+  --tx-d3:#9FB6C1;
+  --mut-d:#8FA6B3;
+  /* Light surfaces (landing sections, cards) */
+  --paper:#F3F1EA;
+  --paper2:#E9E6DA;
+  --paper3:#EFEBDF;
+  --card:#FFFFFF;
+  --line:#D9D4C5;
+  --grid-l:#E6E2D6;
+  --axis:#B9B3A2;
+  --field-b:#AEB6BB;
+  /* Text on light surfaces */
+  --tx:#0F1D26;
+  --mut:#4B5963;
+  --mut-l:#55636C;
+  /* Market signals: up, down and warning (dark / light variants) */
+  --up:#3DD598;
+  --upl:#1E8F5B;
+  --dn:#FF6B5E;
+  --dn-l:#FF8A7E;
+  --dnl:#C23B34;
+  --warn:#F2C14E;
+  /* Shadows */
+  --black:#000000;
+}
+body{margin:0;font-family:'Public Sans',system-ui,sans-serif;background:var(--paper);color:var(--tx);-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:inherit}
+h1,h2,h3,h4{font-family:'Source Serif 4',Georgia,serif;margin:0;font-weight:500;letter-spacing:-0.01em}
+p{margin:0;line-height:1.6}
+[hidden]{display:none!important}
+button{font-family:inherit}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:500;letter-spacing:.06em;text-transform:uppercase;font-size:11.5px}
+.num{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;border-radius:2px;font-family:'Public Sans',sans-serif;font-weight:700;font-size:15px;letter-spacing:.01em;cursor:pointer;border:1.5px solid transparent;text-decoration:none;transition:background .2s,border-color .2s,transform .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn-t{background:var(--teal);color:var(--on-teal)}
+.btn-t:hover{background:var(--teal-l)}
+.btn-o{background:transparent;color:var(--white);border-color:color-mix(in srgb,var(--white) 40%,transparent)}
+.btn-o:hover{border-color:var(--white)}
+.btn-ol{background:transparent;color:var(--tx);border-color:var(--tx)}
+.btn-ol:hover{background:var(--tx);color:var(--white)}
+.btn-sm{min-height:38px;padding:0 16px;font-size:13.5px}
+.btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible,.cd:focus-visible{outline:3px solid var(--teal-l);outline-offset:2px}
+.btn.loading{pointer-events:none;opacity:.85}
+.btn.loading::after{content:"";width:15px;height:15px;border:2.5px solid color-mix(in srgb,var(--on-teal) 30%,transparent);border-top-color:var(--on-teal);border-radius:50%;animation:spin .7s linear infinite}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo b{font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:23px;color:var(--white);letter-spacing:-.01em}
+.logo span{display:block;font-size:11.5px;color:var(--mut-d);margin-top:1px;letter-spacing:.02em}
+.fine{font-size:13px;color:var(--mut-d)}
+.chart-card{background:var(--ink2);border:1px solid var(--line-d);border-radius:2px;padding:18px 18px 8px}
+.chart-card.light{background:var(--card);border-color:var(--line)}
+.ch-h{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px}
+.ch-t{font-size:15px;font-weight:700}
+.ch-s{font-size:12.5px;margin-top:2px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;margin:6px 0 8px;align-items:center}
+.legend i{display:inline-block;vertical-align:middle;margin-right:6px}
+.lg-up{width:12px;height:12px;border:2px solid var(--c)}
+.lg-dn{width:12px;height:12px;background:var(--c)}
+.lg-ma{width:18px;height:2px;background:var(--ma)}
+.tbtn{background:none;border:1px solid currentColor;color:inherit;border-radius:2px;font-size:12px;font-weight:600;padding:5px 10px;cursor:pointer;opacity:.85}
+.tbtn:hover{opacity:1}
+.chart{width:100%}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart.dark{--surf:var(--ink2);--grid:color-mix(in srgb,var(--white) 9%,transparent);--txt:var(--mut-d);--ma:var(--tx-d);--band:color-mix(in srgb,var(--teal) 30%,transparent);--bandtxt:var(--teal-xl)}
+.chart.light{--surf:var(--white);--grid:var(--grid-l);--txt:var(--mut-l);--up:var(--upl);--dn:var(--dnl);--ma:var(--tx);--band:color-mix(in srgb,var(--teal-d) 12%,transparent);--bandtxt:var(--teal-d)}
+.chart text{font-family:'JetBrains Mono',monospace;font-size:17px;fill:var(--txt)}
+.chart .gl{stroke:var(--grid);stroke-width:1}
+.cd{--c:var(--up);cursor:crosshair;transform-box:fill-box;transform-origin:50% 100%;transition:opacity .5s ease,transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0)*16ms)}
+.cd.dn{--c:var(--dn)}
+.cd .wick{stroke:var(--c);stroke-width:1.7;stroke-linecap:round}
+.cd.up .body{fill:var(--surf);stroke:var(--c);stroke-width:1.8}
+.cd.dn .body{fill:var(--c);stroke:var(--c);stroke-width:1.8}
+.cd:hover .body,.cd:focus .body{stroke-width:3}
+.cd:focus{outline:none}
+.cd .hit{fill:transparent}
+.cd:focus-visible .hit{stroke:var(--bandtxt);stroke-width:1.5;stroke-dasharray:3 3}
+.ma{fill:none;stroke:var(--ma);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:0;transition:stroke-dashoffset 1.8s ease .5s}
+.band{fill:var(--band);transition:opacity .8s ease 1.3s}
+.band-l{fill:var(--bandtxt)!important;font-weight:700}
+.last-l{stroke:var(--txt);stroke-dasharray:3 4;stroke-width:1}
+.tag-bg{fill:var(--txt)}
+.tag-t{fill:var(--surf)!important;font-weight:700}
+.anim .chart:not(.in) .cd{opacity:0;transform:scaleY(.15)}
+.anim .chart:not(.in) .ma{stroke-dashoffset:1}
+.anim .chart:not(.in) .band{opacity:0}
+.dtab{width:100%;border-collapse:collapse;margin:10px 0 12px;font-size:12.5px}
+.dtab caption{text-align:left;padding:4px 0 8px;font-weight:600}
+.dtab th,.dtab td{padding:6px 8px;border-bottom:1px solid var(--grid,var(--line));text-align:right;font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+.dtab th:first-child,.dtab td:first-child{text-align:left}
+.dtab-wrap{max-height:220px;overflow:auto}
+.tip{position:fixed;z-index:80;pointer-events:none;background:var(--ink0);color:var(--tip-tx);border:1px solid color-mix(in srgb,var(--white) 20%,transparent);border-radius:2px;padding:9px 11px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.55;box-shadow:0 8px 24px color-mix(in srgb,var(--black) 35%,transparent);min-width:150px}
+.tip b{display:block;margin-bottom:3px;font-family:'Public Sans',sans-serif;font-size:12.5px}
+.tip .u{color:var(--up)}
+.tip .d{color:var(--dn-l)}
+.refs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.ref{font-family:'JetBrains Mono',monospace;font-size:11.5px;border:1px solid color-mix(in srgb,var(--teal-l) 50%,transparent);color:var(--teal-l);padding:3px 8px;border-radius:2px}
+.d{color:var(--dn)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tw{overflow-x:auto}
+.u{color:var(--up)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .anim .rv{opacity:1!important;transform:none!important}
+  .anim .chart:not(.in) .cd,.anim .chart:not(.in) .band{opacity:1!important;transform:none!important}
+  .track{flex-wrap:wrap;width:auto}
+}
+.anim .chart:not(.in) .band-p{opacity:0}

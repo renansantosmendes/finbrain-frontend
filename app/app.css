@@ -1,0 +1,120 @@
+/*
+ * App shell: top bar, tab bar, panels and controls shared by every screen.
+ * Colors come only from the tokens in assets/css/base.css.
+ */
+#app{background:var(--ink);color:var(--tx-d2);min-height:100vh;font-family:'Public Sans',system-ui,sans-serif;display:flex;flex-direction:column}
+#app h1,#app h2,#app h3{font-family:'Public Sans',sans-serif;color:var(--head-d)}
+
+/* Top bar */
+#app .stb{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:20px;padding:10px 20px;background:var(--ink0);border-bottom:1px solid var(--line-d)}
+#app .logo{padding:0}
+#app .logo b{font-size:20px}
+#app .logo span{margin:0}
+#app .sch{position:relative;flex:0 1 320px}
+#app .sch svg{position:absolute;left:12px;top:11px;width:18px;height:18px;stroke:var(--mut-d);fill:none;stroke-width:2;stroke-linecap:round}
+#app .sch input{width:100%;height:40px;background:var(--ink2);border:1px solid var(--line-d);color:var(--white);padding:0 12px 0 38px;font-size:14px;font-family:inherit;border-radius:2px}
+#app .sch input::placeholder{color:var(--mut-d)}
+#app .mini{display:flex;gap:22px;flex:1;overflow:hidden;font-size:13px;white-space:nowrap}
+#app .mini span{display:flex;gap:8px;align-items:baseline}
+#app .mini .k{color:var(--mut-d)}
+#app .mini .v{font-family:'JetBrains Mono',monospace;color:var(--white);font-weight:700}
+#app .mini .c{font-family:'JetBrains Mono',monospace;font-size:12px}
+#app .bdg{font-size:11.5px;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 55%,transparent);padding:5px 10px;border-radius:2px;white-space:nowrap}
+
+/* Tab bar */
+#app .tabs{position:sticky;top:var(--stb-h,61px);z-index:30;display:flex;gap:4px;padding:0 20px;background:var(--ink);border-bottom:1px solid var(--line-d);overflow-x:auto}
+#app .tab{appearance:none;display:flex;align-items:center;gap:9px;background:transparent;border:0;border-bottom:3px solid transparent;color:var(--tx-d2);padding:14px 16px 11px;font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+#app .tab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app .tab:hover{color:var(--white)}
+#app .tab[aria-selected="true"]{color:var(--white);border-bottom-color:var(--teal-l)}
+#app .tab[aria-selected="true"] svg{stroke:var(--teal-l)}
+#app .tab .cnt{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;min-width:20px;padding:1px 6px;border-radius:2px;background:color-mix(in srgb,var(--teal) 22%,transparent);color:var(--teal-l)}
+#app .tab .cnt[data-zero]{background:color-mix(in srgb,var(--white) 6%,transparent);color:var(--mut-d)}
+#app .tab:focus-visible{outline:2px solid var(--teal-l);outline-offset:-2px}
+
+/* Stage and panels */
+#app .stage{flex:1;padding:14px}
+#app .tabpanel{display:grid;gap:14px;align-items:start;min-width:0}
+#app .tabpanel:focus{outline:none}
+#app .col{display:flex;flex-direction:column;gap:14px;min-width:0}
+#app .pn{background:var(--ink2);border:1px solid var(--line-d);border-radius:2px;padding:16px;min-width:0}
+#app .ph{font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--mut-d);font-weight:500;margin:0 0 10px}
+#app .pn-lead{font-size:13px;color:var(--mut-d)}
+#app .u{color:var(--up)}
+#app .d{color:var(--dn)}
+#app .ah{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start}
+
+/* Controls */
+#app .ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#app .seg{display:inline-flex;border:1px solid var(--line-d)}
+#app .seg button{background:transparent;border:0;color:var(--tx-d2);padding:7px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;border-right:1px solid var(--line-d)}
+#app .seg button:last-child{border-right:0}
+#app .seg button:hover{color:var(--white)}
+#app .seg button[aria-pressed="true"]{background:var(--teal);color:var(--on-teal)}
+#app .ck{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;color:var(--tx-d2);cursor:pointer}
+#app .ck input{accent-color:var(--teal);width:16px;height:16px}
+#app .tbtn{color:var(--tx-d2)}
+#app .chp{background:transparent;border:1px solid color-mix(in srgb,var(--teal-l) 45%,transparent);color:var(--teal-l);font-size:12px;padding:5px 9px;border-radius:2px;cursor:pointer;font-family:inherit;text-align:left}
+#app .chp:hover{background:color-mix(in srgb,var(--teal-l) 10%,transparent)}
+#app .lnk{background:none;border:0;padding:0;color:var(--teal-l);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+#app .spin{display:inline-block;width:12px;height:12px;border:2px solid color-mix(in srgb,var(--white) 25%,transparent);border-top-color:var(--teal-l);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
+#app .legend{color:var(--tx-d2)}
+#app .fine{font-size:12px;margin:8px 2px 0}
+
+/* Key-value grid used by side cards */
+#app .kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line-d);font-size:13.5px}
+#app .kv:first-of-type{border-top:0}
+#app .kv b{font-family:'JetBrains Mono',monospace;color:var(--white);text-align:right}
+#app .kv small{display:block;color:var(--mut-d);font-size:11.5px}
+
+/* Does / does not lists (Brain scope and Transparência) */
+#app .scope{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:13px;color:var(--tx-d1)}
+#app .scope li{display:flex;gap:8px}
+#app .scope li::before{font-family:'JetBrains Mono',monospace;font-weight:700;flex:none}
+#app .scope.yes li::before{content:"+";color:var(--up)}
+#app .scope.no li::before{content:"–";color:var(--dn)}
+
+/* Charts: phones get a compact SVG geometry (see core/charts.js), so the
+   SVG simply scales to the panel width. */
+#app .chart svg.compact text{font-size:23px}
+#app .chart svg.compact .tag-t{font-size:22px}
+
+/* Tablet and small laptop */
+@media (max-width:1180px){
+  #app .mini{display:none}
+  #app .stb{gap:14px}
+  #app .sch{flex:1 1 320px}
+}
+
+/* Phone */
+@media (max-width:720px){
+  #app .stb{position:static;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 12px}
+  #app .sch{grid-column:1 / -1;order:3}
+  #app .bdg{font-size:10px;padding:4px 7px}
+  #app .tabs{top:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding:0;overflow:visible}
+  #app .tab{flex-direction:column;justify-content:center;gap:4px;padding:10px 2px 8px;font-size:11.5px;font-weight:600;position:relative;min-width:0}
+  #app .tab svg{width:20px;height:20px}
+  #app .tab .cnt{position:absolute;top:6px;left:calc(50% + 8px);font-size:10px;min-width:16px;padding:0 4px;line-height:15px}
+  #app .stage{padding:10px 10px calc(16px + env(safe-area-inset-bottom,0px))}
+  #app .tabpanel{gap:10px}
+  #app .col{gap:10px}
+  #app .pn{padding:14px 12px}
+  #app .ah{gap:10px}
+  #app .ctl{gap:6px}
+  #app .legend{gap:10px;font-size:11.5px}
+}
+@media (max-width:380px){
+  #app .logo span{display:none}
+  #app .tab{font-size:10.5px}
+}
+
+/* Touch screens: comfortable tap targets */
+@media (pointer:coarse){
+  #app .seg button{min-height:40px;padding:0 14px}
+  #app .ck{min-height:40px}
+  #app .ck input{width:20px;height:20px}
+  #app .chp{min-height:36px;padding:7px 11px}
+  #app .lnk{padding:6px 0}
+  #app .tbtn{min-height:36px}
+  #app .sch input{height:44px;font-size:16px}
+}
