@@ -12,6 +12,7 @@
 <link rel="icon" type="image/png" href="../assets/img/finbrain-logo.png">
 <link rel="stylesheet" href="../assets/css/base.css">
 <link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="screens/inicio/inicio.css">
 <link rel="stylesheet" href="screens/dashboards/dashboards.css">
 <link rel="stylesheet" href="screens/brain/brain.css">
 <link rel="stylesheet" href="screens/simulacoes/simulacoes.css">
@@ -25,10 +26,12 @@
     <div class="sch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="sq" list="syms" placeholder="Buscar ativo (PETR4, VALE3, IBOV…)" aria-label="Buscar ativo" autocomplete="off"><datalist id="syms"></datalist></div>
     <div class="mini" id="mini" aria-label="Indicadores de exemplo"></div>
     <div class="bdg" title="Protótipo: as séries são geradas e não são cotações reais">Mock · dados ilustrativos</div>
+    <div class="usr" id="usr"><span class="av" id="usrAv" aria-hidden="true"></span><span class="nm" id="usrNm"></span><a class="out" href="../login/index.html">Sair</a></div>
   </header>
 
   <nav class="tabs" role="tablist" aria-label="Funcionalidades do FinBrain">
-    <button class="tab" role="tab" id="tabbtn-dashboards" aria-controls="tab-dashboards" aria-selected="true" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Dashboards</button>
+    <button class="tab" role="tab" id="tabbtn-inicio" aria-controls="tab-inicio" aria-selected="true" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Início</button>
+    <button class="tab" role="tab" id="tabbtn-dashboards" aria-controls="tab-dashboards" aria-selected="false" tabindex="-1" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Dashboards</button>
     <button class="tab" role="tab" id="tabbtn-brain" aria-controls="tab-brain" aria-selected="false" tabindex="-1" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Brain</button>
     <button class="tab" role="tab" id="tabbtn-simulacoes" aria-controls="tab-simulacoes" aria-selected="false" tabindex="-1" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18c4-10 8 4 16-12"/><circle cx="4" cy="18" r="1.5"/><circle cx="20" cy="6" r="1.5"/></svg>Simulações</button>
     <button class="tab" role="tab" id="tabbtn-transparencia" aria-controls="tab-transparencia" aria-selected="false" tabindex="-1" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>Transparência <span class="cnt" data-zero aria-label="chamadas registradas">0</span></button>
@@ -36,7 +39,24 @@
 
   <main class="stage">
 
-    <section class="tabpanel" id="tab-dashboards" role="tabpanel" aria-labelledby="tabbtn-dashboards" tabindex="0">
+    <section class="tabpanel" id="tab-inicio" role="tabpanel" aria-labelledby="tabbtn-inicio" tabindex="0">
+      <div class="col">
+        <section class="pn hello" aria-labelledby="hiTitle">
+          <p class="mono">Início</p>
+          <h1 id="hiTitle">Olá</h1>
+          <p class="hi-lead">Boas-vindas ao FinBrain. Aqui você acompanha o mercado, pergunta ao Brain e simula cenários antes de decidir. Escolha por onde começar.</p>
+          <p class="hi-date" id="hiDate"></p>
+        </section>
+        <section aria-label="Funcionalidades"><div class="hi-fts" id="hiFeatures"></div></section>
+        <section class="pn"><h2 class="ph">Comece por aqui</h2><div class="hi-qss" id="hiQuick"></div></section>
+      </div>
+      <aside class="col side">
+        <section class="pn"><h2 class="ph">Mercado agora</h2><div class="hi-mks" id="hiMarket"></div><p class="hi-note">Séries ilustrativas da V0, não são cotações reais.</p></section>
+        <section class="pn"><h2 class="ph">Sua sessão</h2><div id="hiSession"></div></section>
+      </aside>
+    </section>
+
+    <section class="tabpanel" id="tab-dashboards" role="tabpanel" aria-labelledby="tabbtn-dashboards" tabindex="0" hidden>
       <aside class="col side">
         <section class="pn"><h2 class="ph">Watchlist</h2><div class="tw"><table class="wlt"><caption class="sr">Lista de ativos acompanhados</caption><thead><tr><th>Ativo</th><th class="r">Último</th><th class="r">Dia</th></tr></thead><tbody id="wlb"></tbody></table></div></section>
         <section class="pn"><h2 class="ph">Brasil · macro</h2><div id="macro"></div></section>
@@ -109,6 +129,7 @@
 <script src="core/simulation-engine.js"></script>
 <script src="core/charts.js"></script>
 <script src="core/state.js"></script>
+<script src="core/user.js"></script>
 <script src="core/tooltip.js"></script>
 <script src="core/tabs.js"></script>
 <script src="core/topbar.js"></script>
@@ -117,6 +138,7 @@
 <script src="screens/simulacoes/simulacoes.js"></script>
 <script src="screens/brain/brain.js"></script>
 <script src="screens/transparencia/transparencia.js"></script>
+<script src="screens/inicio/inicio.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

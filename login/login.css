@@ -1,0 +1,69 @@
+/*
+ * Login page: brand panel (left) and the access form (right). Shared
+ * components (.btn, .logo, .mono, .fine) come from assets/css/base.css;
+ * colors come only from its palette tokens.
+ */
+#lg{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);min-height:100vh;min-height:100dvh;background:var(--paper);color:var(--tx)}
+
+/* Brand panel */
+#lg .lv{background-color:var(--ink);background-image:linear-gradient(color-mix(in srgb,var(--white) 4%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--white) 4%,transparent) 1px,transparent 1px);background-size:48px 48px;color:var(--white);padding:36px 56px;display:flex;flex-direction:column;justify-content:space-between;gap:28px}
+#lg .logo b{display:block;font-size:20px}
+#lg .logo span{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-l)}
+#lg .kick{color:var(--teal-l);margin-bottom:14px}
+#lg .lv h1{font-size:40px;line-height:1.15;max-width:520px;color:var(--white)}
+#lg .lv h1 em{color:var(--teal-l);font-style:italic}
+#lg .cs{width:100%;max-width:520px;margin-top:30px;display:block}
+#lg .cs-grid{stroke:color-mix(in srgb,var(--white) 8%,transparent)}
+#lg .cs-ma{fill:none;stroke:var(--teal-l);stroke-width:2}
+#lg .cs .wk{stroke-width:1.6}
+#lg .cs .bd{stroke-width:1.6}
+#lg .cs .up .wk,#lg .cs .up .bd{stroke:var(--up)}
+#lg .cs .up .bd{fill:var(--ink)}
+#lg .cs .dn .wk,#lg .cs .dn .bd{stroke:var(--dn)}
+#lg .cs .dn .bd{fill:var(--dn)}
+#lg .note,#lg .lvf{font-size:13px;color:var(--tx-d2);margin-top:14px}
+
+/* Access form */
+#lg .rv2{display:flex;align-items:center;justify-content:center;padding:48px 32px}
+#lg .card2{width:100%;max-width:420px}
+#lg .kick2{color:var(--teal-d);margin-bottom:10px}
+#lg .card2 h2{font-size:34px}
+#lg .sub{color:var(--mut);margin-top:10px;font-size:15px}
+#lg .fl{margin-top:20px}
+#lg .fl label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+#lg .in{width:100%;height:48px;border:1.5px solid var(--field-b);border-radius:2px;padding:0 14px;font-size:16px;font-family:inherit;background:var(--white);color:var(--tx)}
+#lg .in:focus{border-color:var(--teal-d);box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 25%,transparent);outline:none}
+#lg .pww{position:relative}
+#lg .pww .in{padding-right:92px}
+#lg .eye{position:absolute;right:6px;top:6px;height:36px;padding:0 12px;border:0;background:transparent;color:var(--teal-d);font-weight:700;font-size:13.5px;cursor:pointer}
+#lg .row2{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap;font-size:14px}
+#lg .ck{display:flex;align-items:center;gap:8px;cursor:pointer}
+#lg .ck input{width:18px;height:18px;accent-color:var(--teal-d)}
+#lg .lk{background:none;border:0;padding:0;color:var(--teal-d);font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+#lg .wide{width:100%;margin-top:10px}
+#lg #go{margin-top:22px}
+#lg .st{margin-top:16px;font-size:14px;background:var(--teal-w);border-left:4px solid var(--teal-d);padding:12px 14px}
+#lg .fine{margin-top:18px;font-size:12.5px;color:var(--mut)}
+
+/* Tablet: narrower brand panel */
+@media (max-width:1180px){
+  #lg .lv{padding:32px 36px}
+  #lg .lv h1{font-size:34px}
+}
+
+/* Phone: brand header on top, the form right below it */
+@media (max-width:720px){
+  #lg{grid-template-columns:minmax(0,1fr);min-height:0}
+  #lg .lv{padding:22px 20px 26px;gap:18px}
+  #lg .lv h1{font-size:26px}
+  #lg .cs,#lg .note,#lg .lvf{display:none}
+  #lg .rv2{padding:28px 20px 40px;align-items:flex-start}
+  #lg .card2 h2{font-size:28px}
+}
+
+/* Touch screens: comfortable tap targets */
+@media (pointer:coarse){
+  #lg .ck{min-height:40px}
+  #lg .ck input{width:22px;height:22px}
+  #lg .lk{padding:10px 0}
+}

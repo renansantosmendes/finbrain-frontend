@@ -2,9 +2,11 @@
 
 ## About this project
 
-V0 of **FinBrain**: a landing page (`index.html`) and the system
-(`app/index.html`), a single central screen with four tabs (Dashboards,
-Brain, Simulações, Transparência). Static HTML, CSS and JavaScript, no
+V0 of **FinBrain**: a landing page (`index.html`), the login
+(`login/index.html`) and the system (`app/index.html`), a single central
+screen with five tabs (Início, Dashboards, Brain, Simulações,
+Transparência). Flow: landing -> login -> app (`#inicio`, or the tab in
+the login hash); app logo -> landing, "Sair" -> login. Static HTML, CSS and JavaScript, no
 build step and no framework; data is illustrative (mock) and generated in
 the browser. See README.md for the folder structure.
 
@@ -13,6 +15,11 @@ the browser. See README.md for the folder structure.
 - Each tab lives in `app/screens/<tab>/` with its own JS and CSS. Code
   shared by tabs goes to `app/core/`; the shell (top bar, tab bar, panels)
   is `app/app.css`.
+- The signed-in user comes only from `FB.user.current()`
+  (`app/core/user.js`). The V0 uses a generic user; when auth_service is
+  connected, replace it there, not in the screens.
+- The tab list lives in `FB.tabs.ORDER`; `login/login.js` keeps a copy
+  (`TABS`) and a test checks they match.
 - Tabs never call each other's rendering. They communicate through
   `FB.state` (`setAsset`, `setSim`, `logCall`) and its events (`asset`,
   `sim`, `trail`, `tab`), and open tabs with `FB.tabs.open(name)`.

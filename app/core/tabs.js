@@ -2,14 +2,15 @@
  * Tab navigation of the central screen.
  *
  * One tab is visible at a time; the active tab is kept in the URL hash
- * (#dashboards, #brain, #simulacoes, #transparencia) so links from the
- * landing page and the browser's back button open the right feature.
+ * (#inicio, #dashboards, #brain, #simulacoes, #transparencia) so links
+ * from the landing and login pages and the browser's back button open the
+ * right feature. Without a valid hash the welcome tab (Início) opens.
  * Keyboard: arrows, Home and End move between tabs (WAI-ARIA tabs pattern).
  */
 (function (root) {
   "use strict";
   var FB = (root.FB = root.FB || {});
-  var ORDER = ["dashboards", "brain", "simulacoes", "transparencia"];
+  var ORDER = ["inicio", "dashboards", "brain", "simulacoes", "transparencia"];
   var current = null;
 
   function tabButton(name) {

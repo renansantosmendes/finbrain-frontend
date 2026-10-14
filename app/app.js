@@ -1,4 +1,4 @@
-/* Bootstraps the central screen: top bar, the four tabs and the tooltip. */
+/* Bootstraps the central screen: top bar, the five tabs and the tooltip. */
 (function (root) {
   "use strict";
   var FB = root.FB;
@@ -9,6 +9,7 @@
   FB.screens.simulacoes.init(document.getElementById("tab-simulacoes"));
   FB.screens.brain.init(document.getElementById("tab-brain"));
   FB.screens.transparencia.init(document.getElementById("tab-transparencia"));
+  FB.screens.inicio.init(document.getElementById("tab-inicio"));
   FB.tooltip.init(app, document.getElementById("tip"));
   FB.tabs.init();
 })(typeof self !== "undefined" ? self : globalThis);

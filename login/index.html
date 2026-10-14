@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#06161F">
+<title>FinBrain · Entrar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="../assets/img/finbrain-logo.png">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="login.css">
+</head>
+<body>
+<div id="lg">
+  <section class="lv">
+    <a class="logo" href="../index.html" aria-label="FinBrain, voltar à página inicial"><img src="../assets/img/finbrain-logo.png" alt="" width="38" height="38" style="display:block"><div><b>FinBrain</b><span>V0 · uso livre</span></div></a>
+    <div class="lvm">
+      <p class="mono kick">Mercado · simulação · Brain</p>
+      <h1>Dados públicos, números claros e um agente que <em>só informa e simula</em>.</h1>
+      <svg class="cs" viewBox="0 0 520 190" role="img" aria-label="Ilustração de gráfico de candles com média móvel"><title>Ilustração de candles</title>
+        <path class="cs-grid" d="M0 40H520M0 95H520M0 150H520"/>
+        <g id="lcs"></g>
+        <path class="cs-ma" id="lma"/>
+      </svg>
+      <p class="note">Protótipo ilustrativo: as séries são geradas e não são cotações reais.</p>
+    </div>
+    <p class="lvf">Informativo. Não é recomendação de investimento.</p>
+  </section>
+  <main class="rv2">
+    <form class="card2" id="lf" novalidate>
+      <p class="mono kick2">Acesso ao sistema</p>
+      <h2>Entrar no FinBrain</h2>
+      <p class="sub">Esta é a versão V0 de uso livre. Qualquer e-mail e senha dão acesso, inclusive em branco.</p>
+      <div class="fl"><label for="em">E-mail</label><input id="em" class="in" type="email" autocomplete="email" placeholder="voce@exemplo.com"></div>
+      <div class="fl"><label for="pw">Senha</label><div class="pww"><input id="pw" class="in" type="password" autocomplete="current-password" placeholder="Sua senha"><button type="button" class="eye" id="eye" aria-pressed="false" aria-label="Mostrar senha">Mostrar</button></div></div>
+      <div class="row2"><label class="ck"><input type="checkbox" id="rm" checked> Manter conectado</label><button type="button" class="lk" id="fg">Esqueci a senha</button></div>
+      <button class="btn btn-t wide" type="submit" id="go">Acessar o sistema <span aria-hidden="true">→</span></button>
+      <button class="btn btn-ol wide" type="button" id="guest">Continuar sem conta</button>
+      <p class="st" id="st" role="status" aria-live="polite" hidden></p>
+      <p class="fine">Sem autenticação real nesta versão. Nenhum dado é enviado ou guardado.</p>
+    </form>
+  </main>
+</div>
+<script src="login.js"></script>
+</body>
+</html>

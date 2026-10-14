@@ -2,7 +2,8 @@
 
 /*
  * Loads the landing page in jsdom: it must run without errors, find every
- * asset it references and link each feature card to its tab in the app.
+ * asset it references and send every call to action through the login,
+ * keeping the tab each feature card points to.
  */
 const test = require("node:test");
 const assert = require("node:assert/strict");
@@ -43,11 +44,13 @@ test("every local asset referenced by the landing exists", () => {
   }
 });
 
-test("calls to action open the app and each feature card opens its tab", () => {
+test("calls to action open the login and each feature card keeps its tab", () => {
   const { document } = loadLanding();
-  const appLinks = [...document.querySelectorAll('a[href="app/index.html"]')];
-  assert.ok(appLinks.length >= 3);
+  const loginLinks = [...document.querySelectorAll('a[href="login/index.html"]')];
+  assert.ok(loginLinks.length >= 3);
+  assert.ok(loginLinks.every((a) => /Acessar o sistema/.test(a.textContent)));
+  assert.equal(document.querySelector('a[href^="app/"]'), null);
   const cardLinks = [...document.querySelectorAll(".cards4 a.cl")].map((a) => a.getAttribute("href"));
-  assert.deepEqual(cardLinks, ["app/index.html#dashboards", "app/index.html#brain", "app/index.html#simulacoes", "app/index.html#transparencia"]);
-  assert.equal(document.querySelector('a[href*="finbrain-sistema"]'), null);
+  assert.deepEqual(cardLinks, ["login/index.html#dashboards", "login/index.html#brain", "login/index.html#simulacoes", "login/index.html#transparencia"]);
+  assert.equal(document.querySelector('a[href*="finbrain-sistema"],a[href*="finbrain-login"]'), null);
 });

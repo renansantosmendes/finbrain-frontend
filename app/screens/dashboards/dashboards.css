@@ -15,10 +15,6 @@
 #app .wlt td.r.d{color:var(--dn)}
 #app .wlt tr:focus-visible{outline:2px solid var(--teal-l);outline-offset:-2px}
 
-#app .spark{display:block;margin-left:auto}
-#app .spark polyline{fill:none;stroke-width:1.6}
-#app .spark.up polyline{stroke:var(--up)}
-#app .spark.dn polyline{stroke:var(--dn)}
 
 #app .mc{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line-d);font-size:13.5px}
 #app .mc:first-child{border-top:0}

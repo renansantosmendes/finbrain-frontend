@@ -14,11 +14,15 @@
 #app .sch svg{position:absolute;left:12px;top:11px;width:18px;height:18px;stroke:var(--mut-d);fill:none;stroke-width:2;stroke-linecap:round}
 #app .sch input{width:100%;height:40px;background:var(--ink2);border:1px solid var(--line-d);color:var(--white);padding:0 12px 0 38px;font-size:14px;font-family:inherit;border-radius:2px}
 #app .sch input::placeholder{color:var(--mut-d)}
-#app .mini{display:flex;gap:22px;flex:1;overflow:hidden;font-size:13px;white-space:nowrap}
+#app .mini{display:flex;flex-wrap:wrap;gap:0 22px;flex:1;height:20px;overflow:hidden;font-size:13px;white-space:nowrap}
 #app .mini span{display:flex;gap:8px;align-items:baseline}
 #app .mini .k{color:var(--mut-d)}
 #app .mini .v{font-family:'JetBrains Mono',monospace;color:var(--white);font-weight:700}
 #app .mini .c{font-family:'JetBrains Mono',monospace;font-size:12px}
+#app .usr{display:flex;align-items:center;gap:10px;font-size:13px;white-space:nowrap}
+#app .usr .av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--teal-d);color:var(--white);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700}
+#app .usr .nm{color:var(--white);font-weight:600}
+#app .usr .out{color:var(--teal-l);font-weight:700;text-decoration:underline;text-underline-offset:3px;padding:4px 0}
 #app .bdg{font-size:11.5px;font-family:'JetBrains Mono',monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 55%,transparent);padding:5px 10px;border-radius:2px;white-space:nowrap}
 
 /* Tab bar */
@@ -79,6 +83,12 @@
 #app .chart svg.compact text{font-size:23px}
 #app .chart svg.compact .tag-t{font-size:22px}
 
+/* Sparklines (watchlist and Início) */
+#app .spark{display:block;margin-left:auto}
+#app .spark polyline{fill:none;stroke-width:1.6}
+#app .spark.up polyline{stroke:var(--up)}
+#app .spark.dn polyline{stroke:var(--dn)}
+
 /* Tablet and small laptop */
 @media (max-width:1180px){
   #app .mini{display:none}
@@ -88,11 +98,13 @@
 
 /* Phone */
 @media (max-width:720px){
-  #app .stb{position:static;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 12px}
+  #app .stb{position:static;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;padding:10px 12px}
+  #app .usr .nm{display:none}
+  #app .usr .av{width:30px;height:30px}
   #app .sch{grid-column:1 / -1;order:3}
-  #app .bdg{font-size:10px;padding:4px 7px}
-  #app .tabs{top:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding:0;overflow:visible}
-  #app .tab{flex-direction:column;justify-content:center;gap:4px;padding:10px 2px 8px;font-size:11.5px;font-weight:600;position:relative;min-width:0}
+  #app .bdg{display:none}
+  #app .tabs{top:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;padding:0;overflow:visible}
+  #app .tab{flex-direction:column;justify-content:center;gap:4px;padding:10px 2px 8px;font-size:10.5px;font-weight:600;position:relative;min-width:0}
   #app .tab svg{width:20px;height:20px}
   #app .tab .cnt{position:absolute;top:6px;left:calc(50% + 8px);font-size:10px;min-width:16px;padding:0 4px;line-height:15px}
   #app .stage{padding:10px 10px calc(16px + env(safe-area-inset-bottom,0px))}
@@ -105,7 +117,7 @@
 }
 @media (max-width:380px){
   #app .logo span{display:none}
-  #app .tab{font-size:10.5px}
+  #app .tab{font-size:9.5px;letter-spacing:-.01em}
 }
 
 /* Touch screens: comfortable tap targets */
@@ -117,4 +129,5 @@
   #app .lnk{padding:6px 0}
   #app .tbtn{min-height:36px}
   #app .sch input{height:44px;font-size:16px}
+  #app .usr .out{padding:10px 0}
 }

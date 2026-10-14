@@ -1,6 +1,7 @@
 /*
- * Top bar of the central screen: indicators strip and the asset search.
- * Picking an asset in the search selects it and opens the Dashboards tab.
+ * Top bar of the central screen: indicators strip, the asset search and
+ * the signed-in user (FB.user) with the link to sign out. Picking an asset
+ * in the search selects it and opens the Dashboards tab.
  */
 (function (root) {
   "use strict";
@@ -23,6 +24,11 @@
     header.querySelector("#syms").innerHTML = FB.market.ASSETS.map(function (asset) {
       return '<option value="' + asset.s + '">' + FB.format.esc(asset.n) + "</option>";
     }).join("");
+
+    var user = FB.user.current();
+    header.querySelector("#usrAv").textContent = user.initials;
+    header.querySelector("#usrNm").textContent = user.name;
+    header.querySelector("#usr").title = user.generic ? "Usuário genérico da V0" : user.name;
 
     var search = header.querySelector("#sq");
     search.addEventListener("change", function () {

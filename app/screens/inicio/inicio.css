@@ -1,0 +1,53 @@
+/* Início tab: welcome screen with greeting, market summary, tabs and quick starts. */
+#tab-inicio{grid-template-columns:minmax(0,1fr) 340px}
+
+/* Greeting */
+#app .hello{background-color:var(--ink2);background-image:linear-gradient(color-mix(in srgb,var(--white) 4%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--white) 4%,transparent) 1px,transparent 1px);background-size:44px 44px;padding:26px 26px 24px}
+#app .hello .mono{color:var(--teal-l)}
+#app .hello h1{font-family:'Source Serif 4',Georgia,serif;font-weight:500;font-size:clamp(28px,3.2vw,40px);line-height:1.1;margin:10px 0 0;color:var(--white)}
+#app .hi-lead{margin-top:12px;font-size:15.5px;color:var(--tx-d1);max-width:640px}
+#app .hi-date{margin-top:14px;font-size:12.5px;color:var(--mut-d);font-family:'JetBrains Mono',monospace}
+#app .hi-date::first-letter{text-transform:uppercase}
+
+/* The other four tabs */
+#app .hi-fts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#app .hi-ft{appearance:none;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;background:var(--ink2);border:1px solid var(--line-d);border-radius:2px;padding:18px;color:var(--tx-d2);font-family:inherit;font-size:13.5px;line-height:1.5;cursor:pointer;transition:border-color .2s,background .2s}
+#app .hi-ft:hover{border-color:color-mix(in srgb,var(--teal-l) 60%,transparent);background:color-mix(in srgb,var(--teal) 6%,var(--ink2))}
+#app .hi-ft svg{width:26px;height:26px;stroke:var(--teal-l);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:4px}
+#app .hi-ft b{font-size:17px;color:var(--white)}
+#app .hi-go{margin-top:auto;padding-top:6px;color:var(--teal-l);font-weight:700}
+
+/* Quick starts */
+#app .hi-qss{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#app .hi-qs{appearance:none;display:flex;flex-direction:column;gap:4px;text-align:left;background:transparent;border:1px solid color-mix(in srgb,var(--teal-l) 45%,transparent);border-radius:2px;padding:12px 14px;color:var(--tx-d2);font-family:inherit;font-size:12.5px;cursor:pointer}
+#app .hi-qs:hover{background:color-mix(in srgb,var(--teal-l) 10%,transparent)}
+#app .hi-qs b{color:var(--teal-l);font-size:14px}
+
+/* Market summary */
+#app .hi-mks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border:1px solid var(--line-d)}
+#app .hi-mk{display:flex;flex-direction:column;gap:3px;padding:12px;border-right:1px solid var(--line-d);border-bottom:1px solid var(--line-d)}
+#app .hi-mk:nth-child(2n){border-right:0}
+#app .hi-mk:nth-last-child(-n+2){border-bottom:0}
+#app .hi-mk .k{font-size:12px;color:var(--mut-d)}
+#app .hi-mk b{font-size:19px;color:var(--white)}
+#app .hi-mk .c{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut-d)}
+#app .hi-mk .c.u{color:var(--up)}
+#app .hi-mk .c.d{color:var(--dn)}
+#app .hi-mk .spark{margin:4px 0 0}
+#app .hi-note{margin-top:14px;border-left:3px solid var(--warn);padding:2px 0 2px 12px;font-size:12.5px;color:var(--tx-d2)}
+
+/* Tablet: one column, side panels side by side */
+@media (max-width:1180px){
+  #tab-inicio{grid-template-columns:minmax(0,1fr)}
+  #tab-inicio>.side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Phone */
+@media (max-width:720px){
+  #tab-inicio>.side{grid-template-columns:minmax(0,1fr)}
+  #app .hello{padding:20px 16px 18px}
+  #app .hi-lead{font-size:14.5px}
+  #app .hi-fts{grid-template-columns:minmax(0,1fr);gap:10px}
+  #app .hi-ft{padding:14px}
+  #app .hi-qss{grid-template-columns:minmax(0,1fr)}
+}

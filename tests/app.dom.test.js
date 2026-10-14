@@ -52,16 +52,73 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-test("starts on Dashboards with every screen rendered and no errors", () => {
+test("starts on Início with every screen rendered and no errors", () => {
   const { document, errors } = loadApp();
   assert.deepEqual(errors, []);
-  assert.deepEqual(visibleTab(document), ["tab-dashboards"]);
+  assert.deepEqual(visibleTab(document), ["tab-inicio"]);
+  assert.equal(document.getElementById("tabbtn-inicio").getAttribute("aria-selected"), "true");
   assert.equal(document.querySelectorAll("#wlb tr").length, 6);
   assert.ok(document.querySelector("#asset svg .cd"));
   assert.ok(document.querySelector("#sim svg.fan"));
   assert.ok(document.querySelector("#bm .msg-a"));
   assert.match(document.querySelector("#mini").textContent, /IBOV/);
-  assert.equal(document.getElementById("tabbtn-dashboards").getAttribute("aria-selected"), "true");
+  assert.equal(document.getElementById("tabbtn-dashboards").getAttribute("aria-selected"), "false");
+});
+
+test("an unknown hash falls back to Início", () => {
+  const { window, document } = loadApp("#nada");
+  assert.deepEqual(visibleTab(document), ["tab-inicio"]);
+  assert.equal(window.location.hash, "#inicio");
+});
+
+test("Início greets the generic user and the top bar shows who is signed in", () => {
+  const { document } = loadApp("#inicio");
+  assert.match(document.getElementById("hiTitle").textContent, /^(Bom dia|Boa tarde|Boa noite), Investidor$/);
+  assert.match(document.getElementById("hiDate").textContent, /dados ilustrativos até 08\/10\/2026/);
+  assert.equal(document.getElementById("usrNm").textContent, "Investidor");
+  assert.equal(document.getElementById("usrAv").textContent, "I");
+  assert.equal(document.querySelector("#usr .out").getAttribute("href"), "../login/index.html");
+  assert.equal(document.querySelectorAll("#hiMarket .hi-mk").length, 4);
+  assert.equal(document.querySelectorAll("#hiMarket .spark").length, 2);
+});
+
+test("Início cards open each of the other tabs", () => {
+  const { document } = loadApp("#inicio");
+  const cards = [...document.querySelectorAll("#hiFeatures [data-goto]")];
+  assert.deepEqual(cards.map((card) => card.getAttribute("data-goto")), ["dashboards", "brain", "simulacoes", "transparencia"]);
+  for (const card of cards) {
+    document.getElementById("tabbtn-inicio").click();
+    card.click();
+    assert.deepEqual(visibleTab(document), ["tab-" + card.getAttribute("data-goto")]);
+  }
+});
+
+test("Início quick starts drive the other tabs and the session panel follows", async () => {
+  const { document } = loadApp("#inicio");
+  assert.match(document.getElementById("hiSession").textContent, /PETR4/);
+  document.getElementById("tabbtn-dashboards").click();
+  document.querySelector('#wlb tr[data-sym="VALE3"]').click();
+  assert.match(document.getElementById("hiSession").textContent, /VALE3/);
+
+  document.getElementById("tabbtn-inicio").click();
+  document.querySelector("#hiQuick [data-asset]").click();
+  assert.deepEqual(visibleTab(document), ["tab-dashboards"]);
+  assert.match(document.querySelector("#asset h1").textContent, /PETR4/);
+
+  document.getElementById("tabbtn-inicio").click();
+  document.getElementById("sim-aporte").value = "1500";
+  document.querySelector("#hiQuick [data-sim]").click();
+  assert.deepEqual(visibleTab(document), ["tab-simulacoes"]);
+  assert.equal(document.getElementById("sim-aporte").value, "500");
+  assert.equal(document.getElementById("sim-anos").value, "10");
+
+  document.getElementById("tabbtn-inicio").click();
+  document.querySelector("#hiQuick [data-ask]").click();
+  assert.deepEqual(visibleTab(document), ["tab-brain"]);
+  await wait(900);
+  assert.match(document.getElementById("bm").textContent, /Selic/);
+  await wait(50);
+  assert.match(document.getElementById("hiSession").textContent, /Transparência[1-9]/);
 });
 
 test("the hash opens the requested tab and tab clicks update it", () => {
@@ -74,7 +131,7 @@ test("the hash opens the requested tab and tab clicks update it", () => {
 });
 
 test("arrow keys move between tabs", () => {
-  const { window, document } = loadApp();
+  const { window, document } = loadApp("#dashboards");
   const first = document.getElementById("tabbtn-dashboards");
   first.dispatchEvent(new window.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
   assert.deepEqual(visibleTab(document), ["tab-brain"]);
@@ -83,7 +140,7 @@ test("arrow keys move between tabs", () => {
 });
 
 test("selecting an asset in the watchlist updates the chart and the Brain context", () => {
-  const { document } = loadApp();
+  const { document } = loadApp("#dashboards");
   document.querySelector('#wlb tr[data-sym="VALE3"]').click();
   assert.match(document.querySelector("#asset h1").textContent, /VALE3/);
   assert.match(document.getElementById("ctxAsset").textContent, /VALE3/);
@@ -124,7 +181,7 @@ test("asking for a simulation updates Simulações and records the trail", async
 });
 
 test("Dashboards and Simulações send questions to the Brain tab", async () => {
-  const { document } = loadApp();
+  const { document } = loadApp("#dashboards");
   document.querySelector("#asset [data-ask]").click();
   assert.deepEqual(visibleTab(document), ["tab-brain"]);
   await wait(900);

@@ -7,6 +7,7 @@ const format = require("../app/core/format.js");
 const market = require("../app/core/market-data.js");
 const simulation = require("../app/core/simulation-engine.js");
 const charts = require("../app/core/charts.js");
+const user = require("../app/core/user.js");
 
 test("pt-BR formatting, signed percentages and money", () => {
   assert.equal(format.fmt(1234.5, 2), "1.234,50");
@@ -78,4 +79,18 @@ test("candles can be drawn at the real pixel size of their box", () => {
   assert.equal((svg.match(/class="cd /g) || []).length, 63);
   const tooSmall = charts.candles(s.d, s.t, asset.u, asset.d, "teste", { size: { width: 100, height: 80 } });
   assert.match(tooSmall, /viewBox="0 0 960 380"/);
+});
+
+test("generic user: initials, first name and greeting by time of day", () => {
+  const current = user.current();
+  assert.equal(current.name, "Investidor");
+  assert.equal(current.firstName, "Investidor");
+  assert.equal(current.initials, "I");
+  assert.equal(current.generic, true);
+  assert.equal(user.initials("Ana Maria Souza"), "AS");
+  assert.equal(user.firstName("Ana Maria Souza"), "Ana");
+  assert.equal(user.greeting(new Date(2026, 9, 13, 8)), "Bom dia");
+  assert.equal(user.greeting(new Date(2026, 9, 13, 14)), "Boa tarde");
+  assert.equal(user.greeting(new Date(2026, 9, 13, 21)), "Boa noite");
+  assert.equal(user.greeting(new Date(2026, 9, 13, 3)), "Boa noite");
 });

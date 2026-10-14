@@ -32,7 +32,7 @@ test("every JavaScript file parses", () => {
 });
 
 test("every page references only files that exist", () => {
-  assert.ok(PAGES.length >= 2);
+  assert.ok(PAGES.length >= 3);
   for (const page of PAGES) {
     const html = fs.readFileSync(page, "utf8");
     const refs = [...html.matchAll(/(?:src|href)="([^"#?]+)/g)].map((m) => m[1]).filter((ref) => !/^(https?:|mailto:)/.test(ref));
