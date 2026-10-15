@@ -1,7 +1,10 @@
 /*
- * Illustrative market data for the V0 (mock): deterministic daily candles
- * for six assets, Brazilian macro indicators and the statistics computed on
- * top of them. The series are generated, not real quotes.
+ * Market data of the central screen: six assets, Brazilian macro indicators
+ * and the statistics computed on top of them. Each asset starts with a
+ * deterministic mock series (generated, not real quotes); live-data.js
+ * replaces the candles and dates with the server's bars when it can. `tk` is
+ * the ticker used by the server and `dates`, when present, the date of each
+ * candle.
  */
 (function (root, factory) {
   var FB = (root.FB = root.FB || {});
@@ -49,12 +52,12 @@
 
   var DATES = businessDays(252);
   var ASSETS = [
-    { s: "PETR4", n: "Petrobras PN", u: "R$", d: 2, a: [[0, 33], [90, 36.5], [170, 40.2], [210, 36.8], [251, 38.4]], v: 0.55, w: 0.3, seed: 11, al: ["petrobras"] },
-    { s: "VALE3", n: "Vale ON", u: "R$", d: 2, a: [[0, 66], [100, 63], [180, 58.5], [251, 61.2]], v: 0.8, w: 0.45, seed: 12, al: ["vale"] },
-    { s: "ITUB4", n: "Itaú Unibanco PN", u: "R$", d: 2, a: [[0, 28.5], [120, 31], [200, 33.5], [251, 33.9]], v: 0.4, w: 0.22, seed: 13, al: ["itau"] },
-    { s: "IBOV", n: "Ibovespa", u: "pts", d: 0, a: [[0, 117000], [120, 123500], [200, 126000], [251, 128430]], v: 900, w: 450, seed: 14, al: ["ibovespa", "bovespa"] },
-    { s: "AAPL", n: "Apple (Nasdaq)", u: "US$", d: 2, a: [[0, 205], [120, 222], [190, 214], [251, 231.5]], v: 2.6, w: 1.2, seed: 15, al: ["apple"] },
-    { s: "USD/BRL", n: "Dólar comercial", u: "R$", d: 2, a: [[0, 5.62], [90, 5.78], [170, 5.34], [251, 5.41]], v: 0.05, w: 0.025, seed: 16, al: ["dolar", "cambio"] },
+    { s: "PETR4", tk: "PETR4.SA", n: "Petrobras PN", u: "R$", d: 2, a: [[0, 33], [90, 36.5], [170, 40.2], [210, 36.8], [251, 38.4]], v: 0.55, w: 0.3, seed: 11, al: ["petrobras"] },
+    { s: "VALE3", tk: "VALE3.SA", n: "Vale ON", u: "R$", d: 2, a: [[0, 66], [100, 63], [180, 58.5], [251, 61.2]], v: 0.8, w: 0.45, seed: 12, al: ["vale"] },
+    { s: "ITUB4", tk: "ITUB4.SA", n: "Itaú Unibanco PN", u: "R$", d: 2, a: [[0, 28.5], [120, 31], [200, 33.5], [251, 33.9]], v: 0.4, w: 0.22, seed: 13, al: ["itau"] },
+    { s: "IBOV", tk: "^BVSP", n: "Ibovespa", u: "pts", d: 0, a: [[0, 117000], [120, 123500], [200, 126000], [251, 128430]], v: 900, w: 450, seed: 14, al: ["ibovespa", "bovespa"] },
+    { s: "AAPL", tk: "AAPL", n: "Apple (Nasdaq)", u: "US$", d: 2, a: [[0, 205], [120, 222], [190, 214], [251, 231.5]], v: 2.6, w: 1.2, seed: 15, al: ["apple"] },
+    { s: "USD/BRL", tk: "USDBRL=X", n: "Dólar comercial", u: "R$", d: 2, a: [[0, 5.62], [90, 5.78], [170, 5.34], [251, 5.41]], v: 0.05, w: 0.025, seed: 16, al: ["dolar", "cambio"] },
   ];
   ASSETS.forEach(function (asset) {
     asset.data = makeSeries(252, asset.a, asset.seed, asset.v, asset.w);
@@ -75,8 +78,17 @@
     })[0] || null;
   }
 
+  function datesOf(asset) {
+    return asset.dates || DATES;
+  }
+
+  function lastDate(asset) {
+    var dates = datesOf(asset);
+    return dates[dates.length - 1];
+  }
+
   function slice(asset, n) {
-    return { d: asset.data.slice(-n), t: DATES.slice(-n) };
+    return { d: asset.data.slice(-n), t: datesOf(asset).slice(-n) };
   }
 
   function closes(data) {
@@ -146,6 +158,7 @@
     sma: sma,
     dayChange: dayChange,
     lastClose: lastClose,
+    lastDate: lastDate,
     performance: performance,
     realRate: realRate,
   };

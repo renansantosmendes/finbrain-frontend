@@ -2,7 +2,7 @@
 
 Landing page, login e sistema do **FinBrain**: dados de mercado, simulações e um
 agente que informa (sem recomendar). Páginas estáticas, sem build, com
-dados ilustrativos (mock) gerados no navegador.
+dados do servidor FinBrain (`finbrain-server`). Quando o servidor não responde, as telas usam séries ilustrativas (mock) geradas no navegador.
 
 ## Estrutura
 
@@ -23,8 +23,10 @@ app/
   app.js                        Inicialização
   core/                         Peças compartilhadas pelas abas
     format.js                   Números, datas e moeda em pt-BR
-    market-data.js              Séries ilustrativas e estatísticas
-    simulation-engine.js        Monte Carlo do aporte mensal
+    market-data.js              Ativos, indicadores e estatísticas (mock como reserva)
+    api.js                      Cliente HTTP do servidor FinBrain
+    live-data.js                Carrega cotações e indicadores do servidor
+    simulation-engine.js        Monte Carlo do aporte mensal (cálculo local do Brain)
     charts.js                   Gráficos SVG (candles, sparkline, leque)
     state.js                    Estado compartilhado e eventos entre as abas
     user.js                     Usuário logado (genérico na V0)
@@ -37,7 +39,7 @@ app/
     dashboards/                 Watchlist, macro Brasil e gráfico de candles
     brain/                      Conversa com o agente e contexto em uso
       brain-engine.js           Lógica de resposta (pura, testável)
-    simulacoes/                 Simulador de aporte mensal
+    simulacoes/                 Simulação GARCH do preço de um ativo (servidor)
     transparencia/              Trilha das chamadas de ferramenta
 tests/                          Testes (node:test + jsdom)
 ```
@@ -68,7 +70,7 @@ então os links abrem a funcionalidade certa e o botão voltar do navegador
 funciona; sem aba no endereço, abre o Início. As abas conversam entre si:
 
 - escolher um ativo nos Dashboards atualiza as sugestões e o contexto do Brain;
-- pedir uma simulação ao Brain atualiza a aba Simulações;
+- a aba Simulações usa o ativo em foco nos Dashboards;
 - cada consulta do Brain entra na Transparência (o número aparece na aba);
 - Dashboards e Simulações têm atalhos que levam a pergunta ao Brain;
 - os atalhos do Início abrem um ativo, uma pergunta ao Brain ou uma simulação.
@@ -98,7 +100,7 @@ girar o celular).
 ```bash
 npm install
 npm run serve      # http://localhost:5500 (a página também abre direto do disco)
-npm test           # 49 testes
+npm test           # 65 testes
 ```
 
 Os testes cobrem: formatação, dados e simulação; respostas do Brain;

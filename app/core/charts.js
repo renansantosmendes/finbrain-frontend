@@ -1,6 +1,6 @@
 /*
  * SVG builders: daily candles with moving averages, the candle table
- * alternative, sparklines and the Monte Carlo fan chart. Colors are set by
+ * alternative, sparklines and the fan chart of simulated percentiles. Colors are set by
  * CSS classes, never inline, so they follow the palette tokens.
  *
  * `options.compact` draws a narrower geometry (fewer axis labels, larger
@@ -103,19 +103,30 @@
     }).join(" ") + '"/></svg>';
   }
 
+  function fanAxisText(value, options) {
+    if (options && options.axis) return options.axis(value);
+    return value >= 1e6 ? fmt(value / 1e6, 1) + " mi" : fmt(value / 1e3, 0) + " mil";
+  }
+
+  function fanValueText(value, options) {
+    if (options && options.format) return options.format(value);
+    return format.money(value);
+  }
+
   function fan(result, options) {
     var g = FAN_GEOMETRY[options && options.compact ? "compact" : "wide"];
     var W = g.W, H = g.H, x0 = 6, x1 = g.x1, y0 = 16, y1 = g.y1, months = result.months, hi = Math.max.apply(null, result.p90) * 1.05;
     function X(m) { return x0 + m * (x1 - x0) / (months - 1); }
     function Y(v) { return y1 - v / hi * (y1 - y0); }
     function points(series) { return series.map(function (v, m) { return X(m).toFixed(1) + "," + Y(v).toFixed(1); }).join(" "); }
-    var f = ['<svg class="fan' + (options && options.compact ? " compact" : "") + '" viewBox="0 0 ' + W + " " + H + '" role="group" aria-label="Simulação de aporte mensal: faixa provável, cenário mediano e total aportado">'];
+    var label = (options && options.label) || "Simulação: faixa provável e cenário mediano";
+    var f = ['<svg class="fan' + (options && options.compact ? " compact" : "") + '" viewBox="0 0 ' + W + " " + H + '" role="group" aria-label="' + esc(label) + '">'];
     for (var t = 0; t < 5; t++) {
       var v = hi * t / 4;
-      f.push('<line class="gl" x1="' + x0 + '" x2="' + x1 + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/><text x="' + (x0 + 4) + '" y="' + (Y(v) - 6).toFixed(1) + '">' + (v >= 1e6 ? fmt(v / 1e6, 1) + " mi" : fmt(v / 1e3, 0) + " mil") + "</text>");
+      f.push('<line class="gl" x1="' + x0 + '" x2="' + x1 + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/><text x="' + (x0 + 4) + '" y="' + (Y(v) - 6).toFixed(1) + '">' + fanAxisText(v, options) + "</text>");
     }
     f.push('<polygon class="band-p" points="' + points(result.p90) + " " + result.p10.map(function (v, m) { return [X(m), Y(v)]; }).reverse().map(function (z) { return z[0].toFixed(1) + "," + z[1].toFixed(1); }).join(" ") + '"/>');
-    f.push('<polyline class="inv" points="' + points(result.inv) + '"/>');
+    if (result.inv) f.push('<polyline class="inv" points="' + points(result.inv) + '"/>');
     f.push('<polyline class="p50" points="' + points(result.p50) + '"/>');
     var step = Math.max(1, Math.ceil(months / 12 / g.yearLabels));
     for (var y = 0; y <= months / 12; y += step) {
@@ -127,7 +138,7 @@
     });
     for (var year = 1; year <= months / 12; year++) {
       var m = year * 12 - 1;
-      var tip = "<b>Ano " + year + "</b>Aportado " + format.money(result.inv[m]) + "<br>Mediano " + format.money(result.p50[m]) + "<br>Faixa provável " + format.money(result.p10[m]) + " a " + format.money(result.p90[m]);
+      var tip = "<b>Ano " + year + "</b>" + (result.inv ? "Aportado " + fanValueText(result.inv[m], options) + "<br>" : "") + "Mediano " + fanValueText(result.p50[m], options) + "<br>Faixa provável " + fanValueText(result.p10[m], options) + " a " + fanValueText(result.p90[m], options);
       f.push('<rect class="hv" tabindex="0" data-tip="' + esc(tip) + '" aria-label="' + esc(tip.replace(/<[^>]+>/g, " ")) + '" x="' + (X(m) - Math.max(6, (x1 - x0) / months * 6)).toFixed(1) + '" y="' + y0 + '" width="' + Math.max(12, (x1 - x0) / months * 12).toFixed(1) + '" height="' + (y1 - y0) + '"/>');
     }
     f.push("</svg>");

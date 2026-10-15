@@ -1,4 +1,8 @@
-/* Bootstraps the central screen: top bar, the five tabs and the tooltip. */
+/*
+ * Bootstraps the central screen: top bar, the five tabs and the tooltip.
+ * The screens render first with the mock data, then the server's data is
+ * loaded and announced with the "data" event so every screen redraws.
+ */
 (function (root) {
   "use strict";
   var FB = root.FB;
@@ -12,4 +16,8 @@
   FB.screens.inicio.init(document.getElementById("tab-inicio"));
   FB.tooltip.init(app, document.getElementById("tip"));
   FB.tabs.init();
+
+  FB.live.load().then(function () {
+    FB.state.emit("data", FB.live.status());
+  });
 })(typeof self !== "undefined" ? self : globalThis);

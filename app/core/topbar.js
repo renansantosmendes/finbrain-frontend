@@ -13,13 +13,37 @@
     return '<span><span class="k">' + label + '</span><span class="v">' + fmt(FB.market.lastClose(asset), asset.d) + '</span><span class="c ' + trend(day) + '">' + arrow(day) + " " + fmt(Math.abs(day), 2) + "%</span></span>";
   }
 
-  function init(header) {
+  function renderIndicators(header) {
     var macro = FB.market.MACRO;
     header.querySelector("#mini").innerHTML =
       indicator(FB.market.findAsset("IBOV"), "IBOV") +
       indicator(FB.market.findAsset("USD/BRL"), "USD/BRL") +
       '<span><span class="k">Selic</span><span class="v">' + fmt(macro.selic, 2) + "%</span></span>" +
       '<span><span class="k">IPCA 12m</span><span class="v">' + fmt(macro.ipca, 1) + "%</span></span>";
+  }
+
+  function renderBadge(header) {
+    var badge = header.querySelector("#srcBadge");
+    var status = FB.live.status();
+    if (status === "live") {
+      badge.textContent = "Dados do servidor FinBrain";
+      badge.title = "Cotações e indicadores vindos do servidor FinBrain";
+    } else if (status === "partial") {
+      badge.textContent = "Dados parciais do servidor";
+      badge.title = "Alguns ativos vêm de séries ilustrativas, porque o servidor não os retornou";
+    } else {
+      badge.textContent = "Mock · dados ilustrativos";
+      badge.title = "Protótipo: as séries são geradas e não são cotações reais";
+    }
+  }
+
+  function init(header) {
+    renderIndicators(header);
+    renderBadge(header);
+    FB.state.on("data", function () {
+      renderIndicators(header);
+      renderBadge(header);
+    });
 
     header.querySelector("#syms").innerHTML = FB.market.ASSETS.map(function (asset) {
       return '<option value="' + asset.s + '">' + FB.format.esc(asset.n) + "</option>";

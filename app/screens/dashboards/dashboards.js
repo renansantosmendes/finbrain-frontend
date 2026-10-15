@@ -44,14 +44,24 @@
   function renderMacro() {
     var macro = market.MACRO;
     var rows = [
-      ["Selic meta", fmt(macro.selic, 2) + "% a.a.", "estável há 6 meses"],
-      ["CDI", fmt(macro.cdi, 2) + "% a.a.", "estável há 6 meses"],
-      ["IPCA 12 meses", fmt(macro.ipca, 1) + "%", "queda de 0,1 p.p. no mês"],
+      ["Selic meta", fmt(macro.selic, 2) + "% a.a.", "taxa básica"],
+      ["CDI", fmt(macro.cdi, 2) + "% a.a.", "referência de renda fixa"],
+      ["IPCA 12 meses", fmt(macro.ipca, 1) + "%", "inflação acumulada"],
       ["Juro real (CDI − IPCA)", fmt(market.realRate(), 1) + "% a.a.", "calculado"],
     ];
     panel.querySelector("#macro").innerHTML = rows.map(function (r) {
       return '<div class="mc"><div>' + r[0] + "<small>" + r[2] + "</small></div><b>" + r[1] + "</b></div>";
-    }).join("") + '<p class="fine">Valores ilustrativos.</p>';
+    }).join("") + '<p class="fine">' + macroNote() + "</p>";
+  }
+
+  function macroNote() {
+    if (FB.live.status() === "live" || FB.live.status() === "partial") return "Fonte: Banco Central do Brasil (SGS), pelo servidor FinBrain.";
+    return "Valores ilustrativos.";
+  }
+
+  function sourceNote(asset) {
+    if (asset.source === "live") return "Dados do servidor FinBrain. Informativo, não é recomendação de investimento.";
+    return "Série gerada para o protótipo. Não são cotações reais.";
   }
 
   function renderAsset() {
@@ -78,7 +88,7 @@
       '<div class="dtab-wrap"' + (data.showTable ? "" : " hidden") + ">" + FB.charts.candleTable(s.d, s.t, a.d) + "</div>" +
       '<div class="stat"><div><span>Abertura (dia)</span><b>' + fmt(lastCandle[0], a.d) + "</b></div><div><span>Máx. do período</span><b>" + fmt(hi, a.d) + "</b></div><div><span>Mín. do período</span><b>" + fmt(lo, a.d) + "</b></div><div><span>Volatilidade 30d</span><b>" + fmt(market.volAnn(market.closes(a.data), 30), 1) + "%</b></div><div><span>Queda máx. (" + data.rng + ')</span><b class="d">' + fmt(market.maxDrawdown(cl), 1) + "%</b></div><div><span>Variação (" + data.rng + ')</span><b class="' + trend(change) + '">' + pc(change, 1) + "</b></div></div>" +
       '<div class="ask-row"><span class="ph">Perguntar ao Brain</span>' + suggestions + "</div>" +
-      '<p class="fine">Série gerada para o protótipo. Não são cotações reais.</p>';
+      '<p class="fine">' + sourceNote(a) + "</p>";
     chart = { key: a.s + data.rng, data: s.d, dates: s.t, unit: a.u, decimals: a.d, label: "Candles diários de " + a.s + " no período de " + data.rng };
     drawChart(true);
     renderWatchlist();
@@ -95,6 +105,10 @@
     renderMacro();
     renderAsset();
     state.on("asset", renderAsset);
+    state.on("data", function () {
+      renderMacro();
+      renderAsset();
+    });
     FB.layout.onChange(renderAsset);
     FB.layout.onFitChange(renderAsset);
     if (root.ResizeObserver) {

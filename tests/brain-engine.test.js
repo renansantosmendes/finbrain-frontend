@@ -22,12 +22,13 @@ test("never executes orders", () => {
   assert.match(result.reply.html, /Não executo ordens/);
 });
 
-test("simulation questions update the Simulações tab and log the call", () => {
+test("contribution questions are answered locally and log the call", () => {
   const result = brain.think("Simule aporte de R$ 800 por 15 anos", CONTEXT);
   assert.deepEqual(result.changes.sim, { aporte: 800, anos: 15 });
-  assert.equal(result.reply.goto.tab, "simulacoes");
+  assert.equal(result.reply.goto, undefined);
   assert.deepEqual(result.calls.map((c) => c[0]), ["simulate_dca"]);
   assert.match(result.reply.html, /R\$ 800\/mês/);
+  assert.match(result.reply.html, /Este cálculo é local/);
 });
 
 test("macro questions cite the Central Bank series", () => {

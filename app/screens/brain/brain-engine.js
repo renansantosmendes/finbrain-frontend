@@ -80,8 +80,7 @@
       result.reply = {
         tools: ["simulate_dca · " + params],
         refs: ["Cálculo local · Monte Carlo (" + simulation.PATHS + " trajetórias)"],
-        goto: { tab: "simulacoes", label: "Ver na aba Simulações" },
-        html: "Com aporte de <b class=\"num\">R$ " + fmt(sim.aporte, 0) + "/mês</b> por <b>" + sim.anos + " anos</b> (retorno real médio de " + fmt(sim.ret, 1) + "% a.a. e volatilidade de " + fmt(sim.vol, 1) + "%), você terá aportado " + num(money(final.invested)) + ". O cenário mediano chega a " + num(money(final.median)) + ", e em 80% das simulações o resultado fica entre " + num(money(final.low)) + " e " + num(money(final.high)) + ". Em cerca de 10% dos casos o resultado fica abaixo de " + money(final.low) + ". Atualizei a aba Simulações com essas hipóteses.",
+        html: "Com aporte de <b class=\"num\">R$ " + fmt(sim.aporte, 0) + "/mês</b> por <b>" + sim.anos + " anos</b> (retorno real médio de " + fmt(sim.ret, 1) + "% a.a. e volatilidade de " + fmt(sim.vol, 1) + "%), você terá aportado " + num(money(final.invested)) + ". O cenário mediano chega a " + num(money(final.median)) + ", e em 80% das simulações o resultado fica entre " + num(money(final.low)) + " e " + num(money(final.high)) + ". Em cerca de 10% dos casos o resultado fica abaixo de " + money(final.low) + ". Este cálculo é local: a aba Simulações mostra a simulação GARCH de um ativo.",
       };
       return result;
     }

@@ -7,8 +7,9 @@ V0 of **FinBrain**: a landing page (`index.html`), the login
 screen with five tabs (Início, Dashboards, Brain, Simulações,
 Transparência). Flow: landing -> login -> app (`#inicio`, or the tab in
 the login hash); app logo -> landing, "Sair" -> login. Static HTML, CSS and JavaScript, no
-build step and no framework; data is illustrative (mock) and generated in
-the browser. See README.md for the folder structure.
+build step and no framework. Market data comes from the FinBrain server
+(`https://finbrain-server.vercel.app/api/v1`); illustrative mock series are
+the fallback when it is unreachable. See README.md for the folder structure.
 
 ## About the structure
 
@@ -18,13 +19,17 @@ the browser. See README.md for the folder structure.
 - The signed-in user comes only from `FB.user.current()`
   (`app/core/user.js`). The V0 uses a generic user; when auth_service is
   connected, replace it there, not in the screens.
+- Server calls go only through `app/core/api.js`, and `app/core/live-data.js`
+  fills `FB.market.ASSETS` and `FB.market.MACRO` in place and emits the
+  `data` event, so screens never call `fetch` themselves and redraw on
+  `FB.state.on("data")`.
 - The tab list lives in `FB.tabs.ORDER`; `login/login.js` keeps a copy
   (`TABS`) and a test checks they match.
 - Tabs never call each other's rendering. They communicate through
   `FB.state` (`setAsset`, `setSim`, `logCall`) and its events (`asset`,
   `sim`, `trail`, `tab`), and open tabs with `FB.tabs.open(name)`.
 - Keep logic pure and testable where possible (`brain-engine.js`,
-  `market-data.js`, `simulation-engine.js`, `charts.js` use the UMD
+  `market-data.js`, `simulation-engine.js`, `charts.js`, `api.js`, `live-data.js` use the UMD
   pattern so Node tests can `require` them).
 - Scripts are classic `<script>` tags (no ES modules) so the pages also
   open straight from disk. Keep the load order in `app/index.html`.

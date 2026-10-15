@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06161F">
 <title>FinBrain · Sistema (V0)</title>
-<meta name="description" content="Dashboards de mercado, o agente Brain, simulações de aporte e a trilha de transparência do FinBrain.">
+<meta name="description" content="Dashboards de mercado, o agente Brain, simulações GARCH de preço de ativos e a trilha de transparência do FinBrain.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;1,8..60,500&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
     <a class="logo" href="../index.html" aria-label="FinBrain, voltar à página inicial"><img src="../assets/img/finbrain-logo.png" alt="" width="34" height="34" style="display:block"><div><b>FinBrain</b><span>V0 · uso livre</span></div></a>
     <div class="sch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="sq" list="syms" placeholder="Buscar ativo (PETR4, VALE3, IBOV…)" aria-label="Buscar ativo" autocomplete="off"><datalist id="syms"></datalist></div>
     <div class="mini" id="mini" aria-label="Indicadores de exemplo"></div>
-    <div class="bdg" title="Protótipo: as séries são geradas e não são cotações reais">Mock · dados ilustrativos</div>
+    <div class="bdg" id="srcBadge" title="Protótipo: as séries são geradas e não são cotações reais">Mock · dados ilustrativos</div>
     <div class="usr" id="usr"><span class="av" id="usrAv" aria-hidden="true"></span><span class="nm" id="usrNm"></span><a class="out" href="../login/index.html">Sair</a></div>
   </header>
 
@@ -51,7 +51,7 @@
         <section class="pn"><h2 class="ph">Comece por aqui</h2><div class="hi-qss" id="hiQuick"></div></section>
       </div>
       <aside class="col side">
-        <section class="pn"><h2 class="ph">Mercado agora</h2><div class="hi-mks" id="hiMarket"></div><p class="hi-note">Séries ilustrativas da V0, não são cotações reais.</p></section>
+        <section class="pn"><h2 class="ph">Mercado agora</h2><div class="hi-mks" id="hiMarket"></div><p class="hi-note" id="hiNote">Séries ilustrativas da V0, não são cotações reais.</p></section>
         <section class="pn"><h2 class="ph">Sua sessão</h2><div id="hiSession"></div></section>
       </aside>
     </section>
@@ -70,7 +70,7 @@
         <div class="bm" id="bm" aria-live="polite"></div>
         <div class="bc" id="bc"></div>
         <form class="bf" id="bf"><textarea id="bq" rows="1" aria-label="Pergunte ao Brain" placeholder="Pergunte sobre o ativo, a economia ou uma simulação…"></textarea><button class="btn btn-t btn-sm" id="bsend" type="submit">Enviar</button></form>
-        <p class="bd">Informativo. Não é recomendação de investimento. Séries ilustrativas.</p>
+        <p class="bd">Informativo. Não é recomendação de investimento.</p>
       </section>
       <aside class="col">
         <section class="pn"><h2 class="ph">Ativo em foco</h2><div id="ctxAsset"></div></section>
@@ -85,18 +85,18 @@
     </section>
 
     <section class="tabpanel" id="tab-simulacoes" role="tabpanel" aria-labelledby="tabbtn-simulacoes" tabindex="0" hidden>
-      <section class="pn" id="sim" aria-label="Simulação de aporte mensal"></section>
+      <section class="pn" id="sim" aria-label="Simulação GARCH do preço de um ativo"></section>
       <aside class="pn guide">
         <h2 class="ph">Como ler a simulação</h2>
         <dl>
           <dt>Faixa provável (P10 a P90)</dt>
-          <dd>Em 80% das 400 trajetórias simuladas, o patrimônio terminou dentro dessa faixa.</dd>
-          <dt>Cenário mediano (P50)</dt>
+          <dd>Em 80% das 500 trajetórias simuladas, o preço terminou dentro dessa faixa.</dd>
+          <dt>Mediana (P50)</dt>
           <dd>Metade das trajetórias terminou acima e metade abaixo desse valor.</dd>
-          <dt>Total aportado</dt>
-          <dd>Soma do valor inicial com todos os aportes mensais, sem rendimento.</dd>
-          <dt>Retorno real</dt>
-          <dd>Rendimento já descontada a inflação: os valores estão em reais de hoje.</dd>
+          <dt>GARCH(1,1)</dt>
+          <dd>Modelo que estima a volatilidade do ativo a partir do histórico recente e a mantém variando ao longo do tempo.</dd>
+          <dt>Histórico do ajuste</dt>
+          <dd>Os pregões usados para estimar o modelo. Um histórico maior dá uma estimativa mais estável.</dd>
         </dl>
         <p class="fine">Passe o mouse ou navegue pelo teclado no gráfico para ver os valores de cada ano.</p>
       </aside>
@@ -115,7 +115,7 @@
           <div><h3>O que faz</h3><ul class="scope yes"><li>Mostra dados públicos de mercado e indicadores do Brasil</li><li>Explica variações e conceitos em linguagem simples</li><li>Simula cenários com hipóteses visíveis</li><li>Registra a fonte e o horário de cada consulta</li></ul></div>
           <div><h3>O que não faz</h3><ul class="scope no"><li>Não recomenda comprar, vender ou manter ativos</li><li>Não executa ordens nem acessa corretoras</li><li>Não promete retorno nem prevê preços</li></ul></div>
         </div>
-        <p class="fine">Os dados vêm de fontes públicas e podem ter atraso ou falhas. Nesta V0 as séries são ilustrativas. O conteúdo é informativo e não constitui recomendação de investimento.</p>
+        <p class="fine">Os dados vêm de fontes públicas e podem ter atraso ou falhas. Quando o servidor não responde, as telas usam séries ilustrativas. O conteúdo é informativo e não constitui recomendação de investimento.</p>
       </section>
     </section>
 
@@ -126,6 +126,8 @@
 <script src="core/format.js"></script>
 <script src="core/layout.js"></script>
 <script src="core/market-data.js"></script>
+<script src="core/api.js"></script>
+<script src="core/live-data.js"></script>
 <script src="core/simulation-engine.js"></script>
 <script src="core/charts.js"></script>
 <script src="core/state.js"></script>

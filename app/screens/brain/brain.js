@@ -51,8 +51,7 @@
     panel.querySelector("#ctxSim").innerHTML =
       '<div class="kv"><span>Aporte mensal</span><b>R$ ' + fmt(sim.aporte, 0) + "</b></div>" +
       '<div class="kv"><span>Prazo</span><b>' + sim.anos + " anos</b></div>" +
-      '<div class="kv"><span>Cenário mediano</span><b>' + money(final.median) + "</b></div>" +
-      '<div class="ctx-actions"><button class="lnk" type="button" data-goto="simulacoes">Abrir Simulações →</button></div>';
+      '<div class="kv"><span>Cenário mediano</span><b>' + money(final.median) + "</b></div>";
 
     var count = state.data.trail.length;
     panel.querySelector("#ctxTrail").innerHTML =
@@ -88,6 +87,7 @@
     state.on("asset", function () { renderChips(); renderContext(); });
     state.on("sim", renderContext);
     state.on("trail", renderContext);
+    state.on("data", function () { renderChips(); renderContext(); });
 
     var input = panel.querySelector("#bq"), form = panel.querySelector("#bf");
     function fitInput() {

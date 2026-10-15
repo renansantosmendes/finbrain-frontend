@@ -25,7 +25,7 @@ function fakeMedia(initial) {
   };
 }
 
-function loadApp(hash, media) {
+function loadApp(hash, media, server) {
   let html = fs.readFileSync(path.join(APP_DIR, "index.html"), "utf8");
   html = html.replace(/<script src="([^"]+)"><\/script>/g, (_tag, src) =>
     "<script>" + fs.readFileSync(path.join(APP_DIR, src), "utf8") + "</script>"
@@ -38,6 +38,7 @@ function loadApp(hash, media) {
     beforeParse(window) {
       window.scrollTo = () => {};
       if (media) window.matchMedia = () => media;
+      if (server) window.fetch = server.fetch;
     },
   });
   dom.window.addEventListener("error", (event) => errors.push(event.message));
@@ -52,6 +53,93 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+const SERVER_TICKERS = ["PETR4.SA", "VALE3.SA", "ITUB4.SA", "^BVSP", "AAPL", "USDBRL=X"];
+
+function barsFor(seed, count) {
+  const bars = [];
+  for (let i = 0; i < count; i += 1) {
+    const day = new Date(Date.UTC(2026, 0, 1) + i * 86400000).toISOString().slice(0, 10);
+    const close = 10 + seed + i * 0.1;
+    bars.push({ date: day, open: close - 0.2, high: close + 0.5, low: close - 0.6, close, volume: 1000 });
+  }
+  return bars;
+}
+
+function dashboardFixture() {
+  return {
+    generated_at: "2026-10-15T16:27:57Z",
+    period: "1y",
+    assets: SERVER_TICKERS.map((ticker, index) => ({
+      ticker,
+      currency: "BRL",
+      last_close: 10 + index,
+      previous_close: 9 + index,
+      day_change_percent: 1.2,
+      last_date: "2026-04-10",
+      bars: barsFor(index, 120),
+    })),
+  };
+}
+
+function macroFixture() {
+  return {
+    selic: { date: "2026-10-15", value: 13.75 },
+    cdi: { date: "2026-10-14", value: 13.65 },
+    ipca_12m: { date: "2026-09-01", value: 4.58 },
+    real_rate: 8.67,
+    source: "Banco Central do Brasil · SGS",
+  };
+}
+
+function garchFixture(horizonDays, ticker, pathCount) {
+  const series = (scale) => Array.from({ length: horizonDays }, (_v, i) => (58 + i * 0.05) * scale);
+  const p50 = series(1);
+  const percentiles = { p5: series(0.8), p10: series(0.9), p25: series(0.96), p50, p75: series(1.04), p90: series(1.1), p95: series(1.2) };
+  const last = (key) => percentiles[key][horizonDays - 1];
+  return {
+    ticker,
+    last_close: 58.04,
+    last_date: "2026-10-15",
+    n_paths: pathCount,
+    observations_used: 497,
+    parameters: { mu: 0.1, omega: 1.08, alpha: 0.19, beta: 0.39, persistence: 0.58, annualized_volatility_percent: 25.7 },
+    dates: Array.from({ length: horizonDays }, (_v, i) => "2026-10-" + String(16 + (i % 14)).padStart(2, "0")),
+    percentiles,
+    sample_paths: [],
+    final: { p5: last("p5"), p10: last("p10"), p25: last("p25"), p50: last("p50"), p75: last("p75"), p90: last("p90"), p95: last("p95"), prob_above_last: 0.78 },
+  };
+}
+
+function serverStub(reply) {
+  const calls = [];
+  const fetch = (url, options = {}) => {
+    const parsed = new URL(url);
+    const body = options.body ? JSON.parse(options.body) : null;
+    calls.push({ method: options.method || "GET", path: parsed.pathname + parsed.search, body });
+    const answer = reply(parsed.pathname, body);
+    return Promise.resolve({ ok: answer.status < 400, status: answer.status, json: () => Promise.resolve(answer.body) });
+  };
+  return { fetch, calls };
+}
+
+function healthyServer(garch) {
+  return serverStub((pathname, body) => {
+    if (pathname.endsWith("/dashboard")) return { status: 200, body: dashboardFixture() };
+    if (pathname.endsWith("/macro/brasil/summary")) return { status: 200, body: macroFixture() };
+    if (pathname.endsWith("/simulations/garch/asset")) {
+      return garch ? garch(body) : { status: 200, body: garchFixture(body.horizon_days, body.ticker, body.n_paths) };
+    }
+    return { status: 404, body: { code: "not_found", message: "Não encontrado." } };
+  });
+}
+
+function runSimulation(document, window) {
+  const horizon = document.getElementById("sim-horizonte");
+  horizon.value = "2";
+  horizon.dispatchEvent(new window.Event("change", { bubbles: true }));
+  document.querySelector('#sim [data-act="run"]').click();
+}
+
 test("starts on Início with every screen rendered and no errors", () => {
   const { document, errors } = loadApp();
   assert.deepEqual(errors, []);
@@ -59,7 +147,7 @@ test("starts on Início with every screen rendered and no errors", () => {
   assert.equal(document.getElementById("tabbtn-inicio").getAttribute("aria-selected"), "true");
   assert.equal(document.querySelectorAll("#wlb tr").length, 6);
   assert.ok(document.querySelector("#asset svg .cd"));
-  assert.ok(document.querySelector("#sim svg.fan"));
+  assert.match(document.querySelector("#sim .gs-status").textContent, /Simular/);
   assert.ok(document.querySelector("#bm .msg-a"));
   assert.match(document.querySelector("#mini").textContent, /IBOV/);
   assert.equal(document.getElementById("tabbtn-dashboards").getAttribute("aria-selected"), "false");
@@ -106,11 +194,9 @@ test("Início quick starts drive the other tabs and the session panel follows", 
   assert.match(document.querySelector("#asset h1").textContent, /PETR4/);
 
   document.getElementById("tabbtn-inicio").click();
-  document.getElementById("sim-aporte").value = "1500";
-  document.querySelector("#hiQuick [data-sim]").click();
+  document.querySelector("#hiQuick [data-sim-asset]").click();
   assert.deepEqual(visibleTab(document), ["tab-simulacoes"]);
-  assert.equal(document.getElementById("sim-aporte").value, "500");
-  assert.equal(document.getElementById("sim-anos").value, "10");
+  assert.equal(document.getElementById("sim-ativo").value, "PETR4");
 
   document.getElementById("tabbtn-inicio").click();
   document.querySelector("#hiQuick [data-ask]").click();
@@ -161,7 +247,7 @@ test("searching an asset in the top bar opens it on Dashboards", () => {
   assert.match(document.querySelector("#asset h1").textContent, /ITUB4/);
 });
 
-test("asking for a simulation updates Simulações and records the trail", async () => {
+test("asking the Brain for a simulation answers locally and records the trail", async () => {
   const { document } = loadApp("#brain");
   const input = document.getElementById("bq");
   input.value = "Simule aporte de R$ 800 por 15 anos";
@@ -169,15 +255,13 @@ test("asking for a simulation updates Simulações and records the trail", async
   assert.match(document.getElementById("bm").textContent, /Consultando as fontes/);
   await wait(900);
   assert.match(document.getElementById("bm").textContent, /R\$ 800\/mês/);
-  assert.equal(document.getElementById("sim-aporte").value, "800");
-  assert.equal(document.getElementById("sim-anos").value, "15");
+  assert.equal(document.querySelector('#bm [data-goto="simulacoes"]'), null);
+  assert.match(document.getElementById("ctxSim").textContent, /R\$ 800/);
   await wait(50);
   const badge = document.querySelector("#tabbtn-transparencia .cnt");
   assert.equal(badge.textContent, "1");
   assert.ok(!badge.hasAttribute("data-zero"));
   assert.match(document.getElementById("trailBody").textContent, /simulate_dca/);
-  document.querySelector('#bm [data-goto="simulacoes"]').click();
-  assert.deepEqual(visibleTab(document), ["tab-simulacoes"]);
 });
 
 test("Dashboards and Simulações send questions to the Brain tab", async () => {
@@ -193,16 +277,64 @@ test("Dashboards and Simulações send questions to the Brain tab", async () => 
   assert.equal(document.querySelectorAll("#bm .msg-u").length, 2);
 });
 
-test("moving a slider re-runs the simulation", async () => {
-  const { window, document } = loadApp("#simulacoes");
-  const before = document.querySelector("#sim .sk").textContent;
-  const slider = document.getElementById("sim-aporte");
-  slider.value = "2000";
-  slider.dispatchEvent(new window.Event("input", { bubbles: true }));
-  assert.equal(document.getElementById("out-aporte").textContent, "R$ 2.000");
-  await wait(200);
-  assert.notEqual(document.querySelector("#sim .sk").textContent, before);
-  assert.match(document.getElementById("ctxSim").textContent, /R\$ 2\.000/);
+test("running a GARCH simulation asks the server and draws the fan", async () => {
+  const server = healthyServer();
+  const { window, document } = loadApp("#simulacoes", null, server);
+  assert.match(document.querySelector("#sim .gs-status").textContent, /Simular/);
+  runSimulation(document, window);
+  assert.match(document.querySelector("#sim .gs-status").textContent, /Consultando/);
+  await wait(50);
+  const request = server.calls.find((call) => call.method === "POST");
+  assert.equal(request.path, "/api/v1/simulations/garch/asset");
+  assert.deepEqual(request.body, { ticker: "PETR4.SA", horizon_days: 504, n_paths: 500, history_period: "2y" });
+  assert.ok(document.querySelector("#sim svg.fan"));
+  assert.match(document.querySelector("#sim .sk").textContent, /78%/);
+  assert.match(document.querySelector("#sim .fine").textContent, /25,7%/);
+});
+
+test("a failed simulation explains the problem in the panel", async () => {
+  const server = healthyServer(() => ({ status: 502, body: { code: "upstream_unavailable", message: "Fonte fora." } }));
+  const { window, document } = loadApp("#simulacoes", null, server);
+  runSimulation(document, window);
+  await wait(50);
+  assert.match(document.querySelector("#sim .gs-error").textContent, /indisponível/);
+  assert.equal(document.querySelector("#sim svg.fan"), null);
+});
+
+test("changing the asset in focus discards the last simulation", async () => {
+  const server = healthyServer();
+  const { window, document } = loadApp("#simulacoes", null, server);
+  runSimulation(document, window);
+  await wait(50);
+  assert.ok(document.querySelector("#sim svg.fan"));
+  document.getElementById("sim-ativo").value = "VALE3";
+  document.getElementById("sim-ativo").dispatchEvent(new window.Event("change", { bubbles: true }));
+  assert.equal(document.querySelector("#sim svg.fan"), null);
+  assert.match(document.querySelector("#sim .gs-status").textContent, /Simular/);
+});
+
+test("the server's prices replace the mock series when the page loads", async () => {
+  const server = healthyServer();
+  const { document } = loadApp("#dashboards", null, server);
+  await wait(50);
+  assert.equal(document.getElementById("srcBadge").textContent, "Dados do servidor FinBrain");
+  assert.match(document.getElementById("mini").textContent, /13,75%/);
+  assert.match(document.getElementById("macro").textContent, /Banco Central/);
+  assert.match(document.querySelector("#asset .fine").textContent, /servidor FinBrain/);
+  const dashboardCalls = server.calls.filter((call) => call.path.startsWith("/api/v1/dashboard"));
+  assert.equal(dashboardCalls.length, 1);
+  assert.match(dashboardCalls[0].path, /tickers=PETR4\.SA/);
+  assert.match(dashboardCalls[0].path, /period=1y/);
+});
+
+test("when the server is unreachable the screens keep the mock data and say so", async () => {
+  const server = { calls: [], fetch: () => Promise.reject(new TypeError("Failed to fetch")) };
+  const { document, errors } = loadApp("#dashboards", null, server);
+  await wait(50);
+  assert.deepEqual(errors, []);
+  assert.equal(document.getElementById("srcBadge").textContent, "Mock · dados ilustrativos");
+  assert.equal(document.querySelectorAll("#wlb tr").length, 6);
+  assert.match(document.querySelector("#asset .fine").textContent, /Não são cotações reais/);
 });
 
 test("user text in the chat is escaped", async () => {
@@ -214,19 +346,26 @@ test("user text in the chat is escaped", async () => {
   await wait(900);
 });
 
-test("phones get compact charts and a short chat placeholder", () => {
+test("phones get compact charts and a short chat placeholder", async () => {
   const media = fakeMedia(true);
-  const { document } = loadApp("#dashboards", media);
+  const { window, document } = loadApp("#dashboards", media, healthyServer());
   assert.equal(document.querySelector("#asset svg").getAttribute("viewBox"), "0 0 560 430");
   assert.ok(document.querySelector("#asset svg").classList.contains("compact"));
+  document.getElementById("tabbtn-simulacoes").click();
+  runSimulation(document, window);
+  await wait(50);
   assert.equal(document.querySelector("#sim svg.fan").getAttribute("viewBox"), "0 0 560 400");
   assert.equal(document.getElementById("bq").placeholder, "Pergunte ao Brain…");
 });
 
-test("charts are redrawn when the screen crosses the phone breakpoint", () => {
+test("charts are redrawn when the screen crosses the phone breakpoint", async () => {
   const media = fakeMedia(false);
-  const { document } = loadApp("#dashboards", media);
+  const { window, document } = loadApp("#dashboards", media, healthyServer());
   assert.equal(document.querySelector("#asset svg").getAttribute("viewBox"), "0 0 960 380");
+  document.getElementById("tabbtn-simulacoes").click();
+  runSimulation(document, window);
+  await wait(50);
+  assert.equal(document.querySelector("#sim svg.fan").getAttribute("viewBox"), "0 0 960 330");
   media.set(true);
   assert.equal(document.querySelector("#asset svg").getAttribute("viewBox"), "0 0 560 430");
   assert.equal(document.querySelector("#sim svg.fan").getAttribute("viewBox"), "0 0 560 400");
