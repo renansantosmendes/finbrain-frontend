@@ -5,8 +5,10 @@
 #app .hb-change.up{color:var(--up)}
 #app .hb-change.dn{color:var(--dn)}
 #app .hb-time{font-size:12.5px;color:var(--mut-d)}
-#app .hb-chart{margin-top:12px}
-#app .intra{width:100%;height:clamp(220px,calc(100vh - 440px),420px);display:block}
+#app .hb-chart{margin-top:12px;height:clamp(220px,calc(100vh - 440px),420px);padding:6px 0}
+#app .intra{display:block;max-width:100%}
+#app .intra-hit{fill:transparent;cursor:crosshair;outline:none}
+#app .intra-hit:hover,#app .intra-hit:focus{fill:color-mix(in srgb,var(--white) 7%,transparent)}
 #app .intra-line{fill:none;stroke:var(--teal-l);stroke-width:2.2;stroke-linejoin:round}
 #app .intra-dot{fill:var(--teal-l)}
 @media (max-width:720px){

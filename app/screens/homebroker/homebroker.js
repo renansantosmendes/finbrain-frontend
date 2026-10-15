@@ -67,13 +67,21 @@
       stat("Volume no dia", volume) + stat("Volume médio", average) + "</div>";
   }
 
-  function chartBlock(asset, bars) {
-    var closes = bars.map(function (bar) { return bar.close; });
-    return '<div class="chart dark hb-chart">' + charts.intraday(closes, {
+  function chartBlock() {
+    return '<div class="chart dark hb-chart" id="hbChart"></div>';
+  }
+
+  function drawChart() {
+    var asset = selectedAsset(), box = panel.querySelector("#hbChart");
+    if (!box || !asset || !session.bars || !session.bars.length) return;
+    var closes = session.bars.map(function (bar) { return bar.close; });
+    var width = box.clientWidth, height = box.clientHeight;
+    box.innerHTML = charts.intraday(closes, {
+      size: width && height ? { width: width, height: height } : null,
       label: "Preço de " + asset.s + " em barras de 5 minutos, no pregão de hoje",
       decimals: asset.d,
       unit: asset.u,
-    }) + "</div>";
+    });
   }
 
   function messageBlock(status, text) {
@@ -92,10 +100,11 @@
     } else {
       var range = session.bars && session.bars.length ? dayRange(session.bars) : null;
       body = priceBlock(session.quote) + statsBlock(session.quote, range) +
-        (session.bars && session.bars.length ? chartBlock(asset, session.bars) : messageBlock("status", "Gráfico intradiário indisponível agora.")) +
+        (session.bars && session.bars.length ? chartBlock() : messageBlock("status", "Gráfico intradiário indisponível agora.")) +
         '<p class="fine">Cotação com cache de 60 segundos no servidor. O gráfico usa barras de 5 minutos, que podem atrasar até 15 minutos e não trazem o horário de cada barra. Informativo, não é recomendação de investimento.</p>';
     }
     panel.querySelector("#hb").innerHTML = header() + body;
+    drawChart();
   }
 
   function fetchHistory(asset) {
@@ -161,6 +170,9 @@
   function init(element) {
     panel = element;
     render();
+    if (root.ResizeObserver) {
+      new root.ResizeObserver(function () { root.requestAnimationFrame(drawChart); }).observe(panel);
+    }
     state.on("tab", function (name) {
       if (name === "homebroker") start();
       else stop();
