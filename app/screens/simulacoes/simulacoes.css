@@ -41,7 +41,8 @@
   #app .ig{grid-template-columns:minmax(0,1fr)}
 }
 #app .fl select{width:100%;height:38px;padding:0 8px;border:1px solid var(--line-d);border-radius:2px;background:transparent;color:var(--white);font:inherit;font-size:13.5px;font-weight:600}
-#app .fl select option{color:var(--tx)}
+#app .fl select option{color:var(--white);background:var(--ink2)}
+#app .fl select option:checked{background:var(--ink3)}
 #app .fl .btn{width:100%}
 #app .gs-status{margin:14px 0;font-size:14px;color:var(--mut-d)}
 #app .gs-error{color:var(--dn)}
