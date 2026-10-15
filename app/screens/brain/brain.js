@@ -29,7 +29,7 @@
         (r.tools && r.tools.length ? tools(r.tools) : "") + r.html +
         (r.refs && r.refs.length ? refs(r.refs) : "") +
         (r.goto ? '<div class="goto"><button class="lnk" type="button" data-goto="' + r.goto.tab + '">' + esc(r.goto.label) + " →</button></div>" : "") +
-        '<div class="note">' + esc(r.note || "Informativo, não é recomendação de investimento. Dados ilustrativos.") + "</div></div>";
+        '<div class="note">' + esc(r.note || "Informativo, não é recomendação de investimento.") + "</div></div>";
     }).join("") + (busy ? '<div class="typing"><span class="spin"></span>Consultando as fontes…</div>' : "");
     box.scrollTop = box.scrollHeight;
   }

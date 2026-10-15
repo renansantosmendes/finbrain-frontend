@@ -1,10 +1,12 @@
 /*
- * Loads the market data of the central screen from the FinBrain server. The
+ * Loads the market data of the screens from the FinBrain server. The
  * server's bars replace the mock candles of market.ASSETS in place, so the
  * screens keep the same shape ([open, high, low, close] per candle and one
- * date per candle). The Brazilian macro indicators come from the same
- * server. When the server cannot be reached the mock series stay on screen
- * and status() reports "mock", so the pages never show an empty state.
+ * date per candle). The Brazilian macro indicators and the Selic history of
+ * the last year come from the same server. When the server cannot be
+ * reached the mock series stay on screen and status() reports "mock"; when
+ * only part of the data arrives it reports "partial", and "live" only when
+ * prices and macro indicators both came from the server.
  */
 (function (root, factory) {
   var FB = (root.FB = root.FB || {});
@@ -14,7 +16,13 @@
   "use strict";
 
   var PERIOD = "1y";
+  var SELIC_SERIES = "selic";
+  var SELIC_DAYS = 366;
   var currentStatus = "loading";
+
+  function isoDaysAgo(days) {
+    return new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+  }
 
   function toCandles(bars) {
     return bars.map(function (bar) { return [bar.open, bar.high, bar.low, bar.close]; });
@@ -46,20 +54,36 @@
     return true;
   }
 
-  function statusFor(applied) {
-    if (applied === market.ASSETS.length) return "live";
-    return applied > 0 ? "partial" : "mock";
+  function applySelicSeries(series) {
+    var observations = series.observations || [];
+    if (!observations.length) throw new Error("empty selic series");
+    market.MACRO.selicHistory = observations.map(function (item) {
+      return { date: item.date, value: item.value };
+    });
+    return true;
+  }
+
+  function statusFor(applied, macroOk) {
+    if (applied === market.ASSETS.length && macroOk) return "live";
+    return applied > 0 || macroOk ? "partial" : "mock";
   }
 
   function load() {
     var dashboard = api.dashboard(market.ASSETS.map(function (asset) { return asset.tk; }), PERIOD)
       .then(applyDashboard)
       .catch(function () { return 0; });
-    var macro = api.macroSummary()
-      .then(applyMacro)
+    var macro = Promise.all([
+      api.macroSummary(),
+      api.macroSeries(SELIC_SERIES, isoDaysAgo(SELIC_DAYS), isoDaysAgo(0)),
+    ])
+      .then(function (results) {
+        applyMacro(results[0]);
+        applySelicSeries(results[1]);
+        return true;
+      })
       .catch(function () { return false; });
     return Promise.all([dashboard, macro]).then(function (results) {
-      currentStatus = statusFor(results[0]);
+      currentStatus = statusFor(results[0], results[1]);
       return currentStatus;
     });
   }
@@ -74,6 +98,7 @@
     status: status,
     applyDashboard: applyDashboard,
     applyMacro: applyMacro,
+    applySelicSeries: applySelicSeries,
     statusFor: statusFor,
   };
 });

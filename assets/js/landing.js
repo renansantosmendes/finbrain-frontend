@@ -27,13 +27,25 @@ function showCandle(g, x, y) {
   tip.hidden = false; place(x, y);
 }
 function showTip(g, x, y) { tip.innerHTML = g.getAttribute('data-tip'); tip.hidden = false; place(x, y); }
-$$('.cd,[data-tip]').forEach(function (g) {
-  var c = g.classList.contains('cd');
-  g.addEventListener('mousemove', function (e) { c ? showCandle(g, e.clientX, e.clientY) : showTip(g, e.clientX, e.clientY); });
-  g.addEventListener('mouseleave', function () { tip.hidden = true; });
-  g.addEventListener('focus', function () { var r = g.getBoundingClientRect(); c ? showCandle(g, r.left + r.width / 2, r.top) : showTip(g, r.left + r.width / 2, r.top); });
-  g.addEventListener('blur', function () { tip.hidden = true; });
+function tipTarget(node) {
+  return node && node.closest ? node.closest('.cd,[data-tip]') : null;
+}
+root.addEventListener('mousemove', function (e) {
+  var g = tipTarget(e.target);
+  if (!g) return;
+  g.classList.contains('cd') ? showCandle(g, e.clientX, e.clientY) : showTip(g, e.clientX, e.clientY);
 });
+root.addEventListener('mouseout', function (e) {
+  var g = tipTarget(e.target);
+  if (g && !g.contains(e.relatedTarget)) tip.hidden = true;
+});
+root.addEventListener('focusin', function (e) {
+  var g = tipTarget(e.target);
+  if (!g) return;
+  var r = g.getBoundingClientRect();
+  g.classList.contains('cd') ? showCandle(g, r.left + r.width / 2, r.top) : showTip(g, r.left + r.width / 2, r.top);
+});
+root.addEventListener('focusout', function () { tip.hidden = true; });
 
 $$('[data-tbl]').forEach(function (b) {
   b.addEventListener('click', function () {

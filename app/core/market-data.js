@@ -143,6 +143,37 @@
     return ((1 + MACRO.cdi / 100) / (1 + MACRO.ipca / 100) - 1) * 100;
   }
 
+  function brazilianDate(isoDate) {
+    return isoDate.split("-").reverse().join("/");
+  }
+
+  function selicText() {
+    var summary = selicSummary();
+    if (!summary) return "O histórico da Selic não pôde ser obtido agora.";
+    var since = "Em 12 meses (desde " + brazilianDate(summary.first.date) + ")";
+    if (!summary.changes.length) return since + " ela não mudou.";
+    return since + " houve " + summary.changes.length + (summary.changes.length === 1 ? " alteração" : " alterações") +
+      ": de " + format.fmt(summary.first.value, 2) + "% para " + format.fmt(summary.last.value, 2) + "% a.a., com a última em " +
+      brazilianDate(summary.lastChange.date) + ".";
+  }
+
+  function selicSummary() {
+    var history = MACRO.selicHistory;
+    if (!history || !history.length) return null;
+    var changes = [], previous = null;
+    history.forEach(function (point, index) {
+      if (index === 0 || point.value !== previous) changes.push(point);
+      previous = point.value;
+    });
+    var first = history[0], last = history[history.length - 1];
+    return {
+      first: first,
+      last: last,
+      changes: changes.slice(1),
+      lastChange: changes[changes.length - 1],
+    };
+  }
+
   return {
     Rng: Rng,
     DATES: DATES,
@@ -161,5 +192,7 @@
     lastDate: lastDate,
     performance: performance,
     realRate: realRate,
+    selicSummary: selicSummary,
+    selicText: selicText,
   };
 });

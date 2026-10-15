@@ -91,6 +91,15 @@ function macroFixture() {
   };
 }
 
+function selicFixture() {
+  const observations = [];
+  for (let month = 0; month < 12; month += 1) {
+    const value = month < 6 ? 15 : 13.75;
+    observations.push({ date: "2026-" + String(month + 1).padStart(2, "0") + "-15", value });
+  }
+  return { name: "selic", observations };
+}
+
 function garchFixture(horizonDays, ticker, pathCount) {
   const series = (scale) => Array.from({ length: horizonDays }, (_v, i) => (58 + i * 0.05) * scale);
   const p50 = series(1);
@@ -126,6 +135,7 @@ function healthyServer(garch) {
   return serverStub((pathname, body) => {
     if (pathname.endsWith("/dashboard")) return { status: 200, body: dashboardFixture() };
     if (pathname.endsWith("/macro/brasil/summary")) return { status: 200, body: macroFixture() };
+    if (pathname.endsWith("/macro/brasil/series/selic")) return { status: 200, body: selicFixture() };
     if (pathname.endsWith("/simulations/garch/asset")) {
       return garch ? garch(body) : { status: 200, body: garchFixture(body.horizon_days, body.ticker, body.n_paths) };
     }

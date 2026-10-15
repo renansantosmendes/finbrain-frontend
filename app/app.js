@@ -17,7 +17,14 @@
   FB.tooltip.init(app, document.getElementById("tip"));
   FB.tabs.init();
 
-  FB.live.load().then(function () {
-    FB.state.emit("data", FB.live.status());
+  FB.live.load().then(function (status) {
+    var ibov = FB.market.findAsset("IBOV");
+    if (status === "live") {
+      FB.state.setSim({
+        ret: FB.market.realRate(),
+        vol: FB.market.volAnn(FB.market.closes(ibov.data), 251),
+      });
+    }
+    FB.state.emit("data", status);
   });
 })(typeof self !== "undefined" ? self : globalThis);

@@ -3,6 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
+require("../app/core/format.js");
 const market = require("../app/core/market-data.js");
 const api = require("../app/core/api.js");
 const live = require("../app/core/live-data.js");
@@ -127,23 +128,51 @@ test("macro summary sets the Selic, CDI and IPCA used on screen", () => {
   assert.equal(market.MACRO.ipca, 4.58);
 });
 
-test("status tells live, partial and mock data apart", () => {
-  assert.equal(live.statusFor(market.ASSETS.length), "live");
-  assert.equal(live.statusFor(2), "partial");
-  assert.equal(live.statusFor(0), "mock");
+test("status is live only when prices and macro both come from the server", () => {
+  assert.equal(live.statusFor(market.ASSETS.length, true), "live");
+  assert.equal(live.statusFor(market.ASSETS.length, false), "partial");
+  assert.equal(live.statusFor(2, true), "partial");
+  assert.equal(live.statusFor(0, false), "mock");
+});
+
+test("the Selic history yields the changes of the last year and a sentence about them", () => {
+  live.applySelicSeries({
+    observations: [
+      { date: "2026-01-10", value: 15 },
+      { date: "2026-02-10", value: 15 },
+      { date: "2026-03-18", value: 14.75 },
+      { date: "2026-04-29", value: 14.5 },
+    ],
+  });
+  const summary = market.selicSummary();
+  assert.equal(summary.changes.length, 2);
+  assert.equal(summary.lastChange.value, 14.5);
+  assert.match(market.selicText(), /houve 2 alterações: de 15,00% para 14,50% a\.a\., com a última em 29\/04\/2026\./);
+});
+
+test("a flat Selic is described as unchanged", () => {
+  live.applySelicSeries({ observations: [{ date: "2026-01-10", value: 13.75 }, { date: "2026-10-10", value: 13.75 }] });
+  assert.match(market.selicText(), /ela não mudou/);
+});
+
+test("an empty Selic series is rejected", () => {
+  assert.throws(() => live.applySelicSeries({ observations: [] }));
 });
 
 test("load falls back to the mock data when the server cannot be reached", async () => {
   const realDashboard = api.dashboard;
   const realMacro = api.macroSummary;
+  const realSeries = api.macroSeries;
   api.dashboard = () => Promise.reject(new api.ApiError(0, "network", "offline"));
   api.macroSummary = () => Promise.reject(new api.ApiError(0, "network", "offline"));
+  api.macroSeries = () => Promise.reject(new api.ApiError(0, "network", "offline"));
   try {
     assert.equal(await live.load(), "mock");
     assert.equal(live.status(), "mock");
   } finally {
     api.dashboard = realDashboard;
     api.macroSummary = realMacro;
+    api.macroSeries = realSeries;
   }
 });
 
@@ -155,8 +184,9 @@ test("load requests every asset ticker in one dashboard call", async () => {
     return Promise.resolve({ assets: [] });
   };
   api.macroSummary = () => Promise.resolve({ selic: { value: 1 }, cdi: { value: 1 }, ipca_12m: { value: 1 } });
+  api.macroSeries = () => Promise.resolve({ observations: [{ date: "2026-01-01", value: 1 }] });
   try {
-    assert.equal(await live.load(), "mock");
+    assert.equal(await live.load(), "partial");
     assert.deepEqual(requested[0].tickers, market.ASSETS.map((asset) => asset.tk));
     assert.equal(requested[0].period, "1y");
   } finally {

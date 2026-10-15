@@ -64,6 +64,10 @@
     return request("GET", "/macro/brasil/summary");
   }
 
+  function macroSeries(name, startDate, endDate) {
+    return request("GET", "/macro/brasil/series/" + encodeURIComponent(name) + "?" + query({ start_date: startDate, end_date: endDate }));
+  }
+
   function garchAsset(body) {
     return request("POST", "/simulations/garch/asset", body);
   }
@@ -75,6 +79,7 @@
     request: request,
     dashboard: dashboard,
     macroSummary: macroSummary,
+    macroSeries: macroSeries,
     garchAsset: garchAsset,
   };
 });

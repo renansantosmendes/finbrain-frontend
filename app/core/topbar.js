@@ -30,7 +30,7 @@
       badge.title = "Cotações e indicadores vindos do servidor FinBrain";
     } else if (status === "partial") {
       badge.textContent = "Dados parciais do servidor";
-      badge.title = "Alguns ativos vêm de séries ilustrativas, porque o servidor não os retornou";
+      badge.title = "Parte dos dados vem de séries ilustrativas, porque o servidor não os retornou";
     } else {
       badge.textContent = "Mock · dados ilustrativos";
       badge.title = "Protótipo: as séries são geradas e não são cotações reais";

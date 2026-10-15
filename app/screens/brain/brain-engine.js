@@ -94,7 +94,7 @@
         tools: ["get_macro_series · Selic", "get_macro_series · CDI", "get_macro_series · IPCA 12m"],
         refs: ["Banco Central · SGS 432", "Banco Central · SGS 4389", "Banco Central · SGS 13522"],
         goto: { tab: "dashboards", label: "Ver o painel Brasil · macro" },
-        html: "A Selic meta está em <b class=\"num\">" + fmt(macro.selic, 2) + "% a.a.</b> e o CDI em " + num(fmt(macro.cdi, 2) + "% a.a.") + ", estáveis nos últimos 6 meses. O IPCA em 12 meses está em " + num(fmt(macro.ipca, 1) + "%") + ". O juro real aproximado (CDI contra IPCA) é de " + num(fmt(market.realRate(), 1) + "% a.a.") + ".",
+        html: "A Selic meta está em <b class=\"num\">" + fmt(macro.selic, 2) + "% a.a.</b> " + market.selicText() + " O CDI está em " + num(fmt(macro.cdi, 2) + "% a.a.") + " e o IPCA em 12 meses em " + num(fmt(macro.ipca, 1) + "%") + ". O juro real aproximado (CDI contra IPCA) é de " + num(fmt(market.realRate(), 1) + "% a.a."),
       };
       return result;
     }

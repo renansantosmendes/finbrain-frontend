@@ -23,6 +23,9 @@ the fallback when it is unreachable. See README.md for the folder structure.
   fills `FB.market.ASSETS` and `FB.market.MACRO` in place and emits the
   `data` event, so screens never call `fetch` themselves and redraw on
   `FB.state.on("data")`.
+- The landing page (`index.html`) is filled by `assets/js/landing-data.js`
+  from the same modules (`api.js`, `live-data.js`, `charts.js`). Its blocks
+  have ids and never keep example values: without live data they say so.
 - The tab list lives in `FB.tabs.ORDER`; `login/login.js` keeps a copy
   (`TABS`) and a test checks they match.
 - Tabs never call each other's rendering. They communicate through

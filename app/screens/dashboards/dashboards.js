@@ -55,7 +55,7 @@
   }
 
   function macroNote() {
-    if (FB.live.status() === "live" || FB.live.status() === "partial") return "Fonte: Banco Central do Brasil (SGS), pelo servidor FinBrain.";
+    if (market.MACRO.selicHistory) return "Fonte: Banco Central do Brasil (SGS), pelo servidor FinBrain.";
     return "Valores ilustrativos.";
   }
 
