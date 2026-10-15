@@ -70,11 +70,11 @@
   #app .ask-row .chp{flex:1 1 100%}
 }
 #app .wdrop{margin:0 0 10px;font-size:13px}
-#app .wdrop summary{cursor:pointer;color:var(--mut-d);font-weight:600;padding:4px 0}
+#app .wdrop summary{cursor:pointer;color:var(--tx-d1);font-weight:600;padding:4px 0}
 #app .wdrop-body{display:grid;gap:8px;padding:10px 0 4px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
 #app .wdrop-item{display:flex;align-items:center;gap:6px;color:var(--white)}
 #app .wdrop-item small{color:var(--mut-d)}
 #app .wdrop-add{display:flex;gap:10px;align-items:flex-end;grid-column:1/-1;flex-wrap:wrap}
 #app .wdrop-add .fl{flex:1;min-width:200px}
 #app .wdrop-add input{height:38px;padding:0 8px;border:1px solid var(--line-d);border-radius:2px;background:transparent;color:var(--white);font:inherit}
-#app .wdrop-msg{grid-column:1/-1;margin:0;color:var(--mut-d)}
+#app .wdrop-msg{grid-column:1/-1;margin:0;color:var(--tx-d1)}

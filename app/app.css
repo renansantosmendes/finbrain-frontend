@@ -94,6 +94,9 @@
   #app .mini{display:none}
   #app .stb{gap:14px}
   #app .sch{flex:1 1 320px}
+  #app .tabs{padding:0 12px}
+  #app .tab{gap:6px;padding:14px 10px 11px;font-size:13.5px}
+  #app .tab svg{width:16px;height:16px}
 }
 
 /* Phone */
@@ -103,7 +106,7 @@
   #app .usr .av{width:30px;height:30px}
   #app .sch{grid-column:1 / -1;order:3}
   #app .bdg{display:none}
-  #app .tabs{top:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;padding:0;overflow:visible}
+  #app .tabs{top:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0;overflow:visible}
   #app .tab{flex-direction:column;justify-content:center;gap:4px;padding:10px 2px 8px;font-size:10.5px;font-weight:600;position:relative;min-width:0}
   #app .tab svg{width:20px;height:20px}
   #app .tab .cnt{position:absolute;top:6px;left:calc(50% + 8px);font-size:10px;min-width:16px;padding:0 4px;line-height:15px}
