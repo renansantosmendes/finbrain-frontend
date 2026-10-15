@@ -1,0 +1,15 @@
+#app .hb-pick{min-width:220px}
+#app .hb-price{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:14px 0 6px}
+#app .hb-price b{font-size:30px;color:var(--white)}
+#app .hb-change{font-size:14px;font-weight:700}
+#app .hb-change.up{color:var(--up)}
+#app .hb-change.dn{color:var(--dn)}
+#app .hb-time{font-size:12.5px;color:var(--mut-d)}
+#app .hb-chart{margin-top:12px}
+#app .intra{width:100%;height:auto;display:block}
+#app .intra-line{fill:none;stroke:var(--teal-l);stroke-width:2.2;stroke-linejoin:round}
+#app .intra-dot{fill:var(--teal-l)}
+@media (max-width:720px){
+  #app .hb-pick{min-width:0;width:100%}
+  #app .hb-price b{font-size:24px}
+}

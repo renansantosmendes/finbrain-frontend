@@ -5,7 +5,7 @@
  * screen like a user: switching tabs, selecting assets, asking the Brain
  * and checking that the other tabs react.
  */
-const test = require("node:test");
+const { test, after } = require("node:test");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -25,6 +25,9 @@ function fakeMedia(initial) {
   };
 }
 
+const openWindows = [];
+after(() => openWindows.forEach((dom) => dom.window.close()));
+
 function loadApp(hash, media, server) {
   let html = fs.readFileSync(path.join(APP_DIR, "index.html"), "utf8");
   html = html.replace(/<script src="([^"]+)"><\/script>/g, (_tag, src) =>
@@ -42,6 +45,7 @@ function loadApp(hash, media, server) {
     },
   });
   dom.window.addEventListener("error", (event) => errors.push(event.message));
+  openWindows.push(dom);
   return { dom, window: dom.window, document: dom.window.document, errors };
 }
 
@@ -65,11 +69,11 @@ function barsFor(seed, count) {
   return bars;
 }
 
-function dashboardFixture() {
+function dashboardFixture(tickers) {
   return {
     generated_at: "2026-10-15T16:27:57Z",
     period: "1y",
-    assets: SERVER_TICKERS.map((ticker, index) => ({
+    assets: (tickers || SERVER_TICKERS).map((ticker, index) => ({
       ticker,
       currency: "BRL",
       last_close: 10 + index,
@@ -125,15 +129,44 @@ function serverStub(reply) {
     const parsed = new URL(url);
     const body = options.body ? JSON.parse(options.body) : null;
     calls.push({ method: options.method || "GET", path: parsed.pathname + parsed.search, body });
-    const answer = reply(parsed.pathname, body);
+    const answer = reply(parsed.pathname, body, parsed.searchParams);
     return Promise.resolve({ ok: answer.status < 400, status: answer.status, json: () => Promise.resolve(answer.body) });
   };
   return { fetch, calls };
 }
 
+function quoteFixture(ticker) {
+  return {
+    ticker,
+    name: ticker === "BBAS3.SA" ? "Banco do Brasil ON" : "Petrobras PN",
+    currency: "BRL",
+    price: 58.02,
+    previous_close: 58.11,
+    day_change_percent: -0.15,
+    fifty_day_average: 47.58,
+    volume: 17263100,
+    average_volume: 44341633,
+    market_time: "2026-10-15T16:12:55Z",
+  };
+}
+
+function intradayFixture() {
+  const bars = [57.6, 57.9, 58.1, 57.8, 58.0, 58.02];
+  return {
+    ticker: "PETR4.SA",
+    period: "1d",
+    interval: "5m",
+    currency: "BRL",
+    bars: bars.map((close, index) => ({ date: "2026-10-15", open: close - 0.1, high: close + 0.2, low: close - 0.3, close, volume: 1000 + index })),
+  };
+}
+
 function healthyServer(garch) {
-  return serverStub((pathname, body) => {
-    if (pathname.endsWith("/dashboard")) return { status: 200, body: dashboardFixture() };
+  return serverStub((pathname, body, search) => {
+    if (pathname.endsWith("/dashboard")) return { status: 200, body: dashboardFixture(search.get("tickers") && search.get("tickers").split(",")) };
+    const quoteMatch = pathname.match(/\/assets\/(.+)\/quote$/);
+    if (quoteMatch) return { status: 200, body: quoteFixture(decodeURIComponent(quoteMatch[1])) };
+    if (pathname.match(/\/assets\/.+\/history$/)) return { status: 200, body: intradayFixture() };
     if (pathname.endsWith("/macro/brasil/summary")) return { status: 200, body: macroFixture() };
     if (pathname.endsWith("/macro/brasil/series/selic")) return { status: 200, body: selicFixture() };
     if (pathname.endsWith("/simulations/garch/asset")) {
@@ -230,8 +263,8 @@ test("arrow keys move between tabs", () => {
   const { window, document } = loadApp("#dashboards");
   const first = document.getElementById("tabbtn-dashboards");
   first.dispatchEvent(new window.KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
-  assert.deepEqual(visibleTab(document), ["tab-brain"]);
-  document.getElementById("tabbtn-brain").dispatchEvent(new window.KeyboardEvent("keydown", { key: "End", bubbles: true }));
+  assert.deepEqual(visibleTab(document), ["tab-homebroker"]);
+  document.getElementById("tabbtn-homebroker").dispatchEvent(new window.KeyboardEvent("keydown", { key: "End", bubbles: true }));
   assert.deepEqual(visibleTab(document), ["tab-transparencia"]);
 });
 
@@ -391,3 +424,60 @@ test("trail rows carry labels for the phone card layout", async () => {
   const labels = [...document.querySelectorAll("#trailBody tr:first-child td")].map((td) => td.getAttribute("data-label"));
   assert.deepEqual(labels, ["Ferramenta", "Fonte", "Parâmetros", "Consultado", "Hash"]);
 });
+
+test("the homebroker shows the day's price, range and an intraday chart from the server", async () => {
+  const server = healthyServer();
+  const { document } = loadApp("#homebroker", null, server);
+  await wait(80);
+  assert.match(document.querySelector("#hb .hb-price").textContent, /R\$ 58,02/);
+  assert.match(document.querySelector("#hb .sk").textContent, /Fechamento anterior58,11/);
+  assert.match(document.querySelector("#hb .sk").textContent, /Abertura57,50/);
+  assert.ok(document.querySelector("#hb svg.intra polyline.intra-line"));
+  assert.match(document.querySelector("#hb .fine").textContent, /atrasar até 15 minutos/);
+  assert.ok(server.calls.some((call) => call.path === "/api/v1/assets/PETR4.SA/quote"));
+  assert.ok(server.calls.some((call) => call.path.startsWith("/api/v1/assets/PETR4.SA/history?period=1d&interval=5m")));
+});
+
+test("changing the homebroker asset requests that asset's quote", async () => {
+  const server = healthyServer();
+  const { window, document } = loadApp("#homebroker", null, server);
+  await wait(80);
+  const select = document.getElementById("hb-ativo");
+  select.value = "VALE3";
+  select.dispatchEvent(new window.Event("change", { bubbles: true }));
+  await wait(80);
+  assert.ok(server.calls.some((call) => call.path === "/api/v1/assets/VALE3.SA/quote"));
+});
+
+test("without the server the homebroker says so and shows no example prices", async () => {
+  const server = { calls: [], fetch: () => Promise.reject(new TypeError("Failed to fetch")) };
+  const { document } = loadApp("#homebroker", null, server);
+  await wait(80);
+  assert.match(document.querySelector("#hb .gs-error").textContent, /Não foi possível falar com o servidor/);
+  assert.equal(document.querySelector("#hb svg.intra"), null);
+});
+
+test("the watchlist dropdown hides an asset and remembers the choice", async () => {
+  const { window, document } = loadApp("#dashboards", null, healthyServer());
+  await wait(50);
+  const box = document.querySelector('#wlPicker [data-watch="AAPL"]');
+  box.checked = false;
+  box.dispatchEvent(new window.Event("change", { bubbles: true }));
+  assert.equal(document.querySelectorAll("#wlb tr").length, 5);
+  assert.ok(!document.querySelector('#wlb tr[data-sym="AAPL"]'));
+  assert.ok(!JSON.parse(window.localStorage.getItem("finbrain.watchlist")).includes("AAPL"));
+  assert.match(document.querySelector("#wlPicker summary").textContent, /5 de 6/);
+});
+
+test("adding a ticker asks the server and puts it in the watchlist", async () => {
+  const { window, document } = loadApp("#dashboards", null, healthyServer());
+  await wait(50);
+  const input = document.getElementById("wlTicker");
+  input.value = "bbas3.sa";
+  document.getElementById("wlAdd").dispatchEvent(new window.Event("submit", { cancelable: true, bubbles: true }));
+  await wait(120);
+  assert.ok(document.querySelector('#wlb tr[data-sym="BBAS3"]'));
+  assert.match(document.getElementById("wlMsg").textContent, /BBAS3 adicionado/);
+  assert.match(document.querySelector('#wlPicker [data-watch="BBAS3"]').parentNode.textContent, /Banco do Brasil ON/);
+});
+

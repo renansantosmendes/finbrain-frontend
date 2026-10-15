@@ -40,6 +40,7 @@ app/
     brain/                      Conversa com o agente e contexto em uso
       brain-engine.js           Lógica de resposta (pura, testável)
     simulacoes/                 Simulação GARCH do preço de um ativo (servidor)
+    homebroker/                 Monitor intradiário do ativo (cotação a cada minuto)
     transparencia/              Trilha das chamadas de ferramenta
 tests/                          Testes (node:test + jsdom)
 ```
@@ -61,7 +62,7 @@ retornado por `GET /api/v1/me`, sem mexer nas telas.
 
 ## Tela central e abas
 
-O sistema tem uma tela só, com cinco abas: **Início**, **Dashboards**,
+O sistema tem uma tela só, com seis abas: **Início**, **Dashboards**, **Homebroker**,
 **Brain**, **Simulações** e **Transparência**. O Início é a página de
 boas-vindas: saúda o usuário, resume o mercado, apresenta as outras abas,
 oferece atalhos ("Comece por aqui") e mostra onde o usuário parou ("Sua

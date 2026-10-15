@@ -22,6 +22,12 @@
       '<span><span class="k">IPCA 12m</span><span class="v">' + fmt(macro.ipca, 1) + "%</span></span>";
   }
 
+  function renderSymbols(header) {
+    header.querySelector("#syms").innerHTML = FB.market.ASSETS.map(function (asset) {
+      return '<option value="' + asset.s + '">' + FB.format.esc(asset.n) + "</option>";
+    }).join("");
+  }
+
   function renderBadge(header) {
     var badge = header.querySelector("#srcBadge");
     var status = FB.live.status();
@@ -43,11 +49,10 @@
     FB.state.on("data", function () {
       renderIndicators(header);
       renderBadge(header);
+      renderSymbols(header);
     });
 
-    header.querySelector("#syms").innerHTML = FB.market.ASSETS.map(function (asset) {
-      return '<option value="' + asset.s + '">' + FB.format.esc(asset.n) + "</option>";
-    }).join("");
+    renderSymbols(header);
 
     var user = FB.user.current();
     header.querySelector("#usrAv").textContent = user.initials;

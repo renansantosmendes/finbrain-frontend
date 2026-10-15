@@ -8,6 +8,9 @@
   var fmt = FB.format.fmt, pc = FB.format.pc, arrow = FB.format.arrow, trend = FB.format.trend, esc = FB.format.esc;
   var market = FB.market, state = FB.state;
   var panel, chart = null, drawnKey = "";
+  var WATCH_KEY = "finbrain.watchlist";
+  var DEFAULT_WATCH = ["PETR4", "VALE3", "ITUB4", "IBOV", "AAPL", "USD/BRL"];
+  var watch = loadWatch();
   var FALLBACK_RATIO = 0.42, MIN_CHART_HEIGHT = 260, MAX_CHART_HEIGHT = 520;
 
   function chartSize(box) {
@@ -30,9 +33,71 @@
     box.innerHTML = FB.charts.candles(chart.data, chart.dates, chart.unit, chart.decimals, chart.label, { compact: compact, size: size });
   }
 
+  function loadWatch() {
+    try {
+      var saved = JSON.parse(root.localStorage.getItem(WATCH_KEY) || "null");
+      if (Array.isArray(saved)) return saved;
+    } catch (error) {
+      /* storage unavailable: the default list is used */
+    }
+    return DEFAULT_WATCH.slice();
+  }
+
+  function saveWatch() {
+    try {
+      root.localStorage.setItem(WATCH_KEY, JSON.stringify(watch));
+    } catch (error) {
+      /* storage unavailable: the choice lasts only for this visit */
+    }
+  }
+
+  function watched() {
+    return market.ASSETS.filter(function (asset) { return watch.indexOf(asset.s) !== -1; });
+  }
+
+  function pickerSummary() {
+    return "Ativos na watchlist · " + watched().length + " de " + market.ASSETS.length;
+  }
+
+  function renderPicker() {
+    var holder = panel.querySelector("#wlPicker");
+    holder.innerHTML = '<details class="wdrop"><summary>' + pickerSummary() + '</summary><div class="wdrop-body">' +
+      market.ASSETS.map(function (asset) {
+        return '<label class="wdrop-item"><input type="checkbox" data-watch="' + esc(asset.s) + '"' + (watch.indexOf(asset.s) !== -1 ? " checked" : "") + "> " +
+          esc(asset.s) + " <small>" + esc(asset.n) + "</small></label>";
+      }).join("") +
+      '<form class="wdrop-add" id="wlAdd"><label class="fl" for="wlTicker">Adicionar ticker do servidor<input id="wlTicker" type="text" placeholder="ex.: BBAS3.SA" autocomplete="off"></label>' +
+      '<button class="btn btn-o btn-sm" type="submit">Adicionar</button></form><p class="wdrop-msg" id="wlMsg" role="status"></p></div></details>';
+  }
+
+  function addTicker(event) {
+    event.preventDefault();
+    var input = panel.querySelector("#wlTicker"), message = panel.querySelector("#wlMsg");
+    message.textContent = "Buscando " + input.value.trim().toUpperCase() + " no servidor…";
+    FB.live.addAsset(input.value).then(function (asset) {
+      if (watch.indexOf(asset.s) === -1) watch.push(asset.s);
+      saveWatch();
+      state.emit("data", FB.live.status());
+      renderPicker();
+      renderWatchlist();
+      panel.querySelector("#wlMsg").textContent = asset.s + " adicionado à watchlist.";
+    }, function (error) {
+      panel.querySelector("#wlMsg").textContent = error && error.message ? error.message : "Não foi possível adicionar o ticker agora.";
+    });
+  }
+
+  function toggleWatch(symbol, checked) {
+    var index = watch.indexOf(symbol);
+    if (checked && index === -1) watch.push(symbol);
+    if (!checked && index !== -1) watch.splice(index, 1);
+    saveWatch();
+    panel.querySelector("#wlPicker summary").textContent = pickerSummary();
+    renderWatchlist();
+  }
+
   function renderWatchlist() {
     var data = state.data;
-    panel.querySelector("#wlb").innerHTML = market.ASSETS.map(function (asset) {
+    panel.querySelector("#wlb").innerHTML = watched().map(function (asset) {
       var last = market.lastClose(asset), day = market.dayChange(asset);
       return '<tr tabindex="0" data-sym="' + asset.s + '" aria-selected="' + (asset.s === data.sym) + '">' +
         '<td class="sy">' + asset.s + "<small>" + esc(asset.n) + "</small></td>" +
@@ -102,6 +167,15 @@
 
   function init(element) {
     panel = element;
+    var holder = document.createElement("div");
+    holder.id = "wlPicker";
+    panel.querySelector("#wlb").closest(".tw").parentNode.insertBefore(holder, panel.querySelector("#wlb").closest(".tw"));
+    renderPicker();
+    panel.querySelector("#wlPicker").addEventListener("change", function (event) {
+      var symbol = event.target.getAttribute && event.target.getAttribute("data-watch");
+      if (symbol) toggleWatch(symbol, event.target.checked);
+    });
+    panel.querySelector("#wlPicker").addEventListener("submit", addTicker);
     renderMacro();
     renderAsset();
     state.on("asset", renderAsset);

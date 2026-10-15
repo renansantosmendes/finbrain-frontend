@@ -103,6 +103,26 @@
     }).join(" ") + '"/></svg>';
   }
 
+  function intraday(closes, options) {
+    var W = 960, H = 300, x0 = 6, x1 = 900, y0 = 14, y1 = 280, n = closes.length;
+    var hi = Math.max.apply(null, closes), lo = Math.min.apply(null, closes);
+    var pad = (hi - lo || Math.abs(hi) * 0.001 || 1) * 0.08;
+    hi += pad;
+    lo -= pad;
+    var decimals = options && options.decimals !== undefined ? options.decimals : 2;
+    function X(i) { return x0 + i * (x1 - x0) / Math.max(1, n - 1); }
+    function Y(v) { return y1 - (v - lo) / (hi - lo) * (y1 - y0); }
+    var p = ['<svg class="intra" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(options && options.label || "Preço intradiário") + '">'];
+    for (var t = 0; t < 5; t++) {
+      var v = lo + (hi - lo) * t / 4, y = Y(v);
+      p.push('<line class="gl" x1="' + x0 + '" x2="' + x1 + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text x="' + (x1 + 8) + '" y="' + (y + 4).toFixed(1) + '">' + fmt(v, decimals) + "</text>");
+    }
+    p.push('<polyline class="intra-line" points="' + closes.map(function (v, i) { return X(i).toFixed(1) + "," + Y(v).toFixed(1); }).join(" ") + '"/>');
+    if (n) p.push('<circle class="intra-dot" cx="' + X(n - 1).toFixed(1) + '" cy="' + Y(closes[n - 1]).toFixed(1) + '" r="4"/>');
+    p.push("</svg>");
+    return p.join("");
+  }
+
   function fanAxisText(value, options) {
     if (options && options.axis) return options.axis(value);
     return value >= 1e6 ? fmt(value / 1e6, 1) + " mi" : fmt(value / 1e3, 0) + " mil";
@@ -145,5 +165,5 @@
     return f.join("");
   }
 
-  return { candles: candles, candleTable: candleTable, sparkline: sparkline, fan: fan };
+  return { candles: candles, candleTable: candleTable, sparkline: sparkline, fan: fan, intraday: intraday };
 });

@@ -88,6 +88,44 @@
     });
   }
 
+  function symbolFor(ticker) {
+    return ticker.replace(/\.SA$/, "").replace(/=X$/, "").replace(/^\^/, "");
+  }
+
+  function unitFor(currency) {
+    if (currency === "BRL") return "R$";
+    if (currency === "USD") return "US$";
+    return currency;
+  }
+
+  function addAsset(ticker) {
+    var normalized = String(ticker || "").trim().toUpperCase();
+    if (!normalized) return Promise.reject(new api.ApiError(422, "invalid_parameter", "Informe um ticker."));
+    var existing = market.ASSETS.filter(function (asset) { return asset.tk === normalized; })[0];
+    if (existing) return Promise.resolve(existing);
+    return Promise.all([api.quote(normalized), api.dashboard([normalized], PERIOD)]).then(function (results) {
+      var quote = results[0];
+      var remote = results[1].assets.filter(function (item) { return item.ticker === normalized; })[0];
+      if (!remote || !remote.bars || remote.bars.length < 2) {
+        throw new api.ApiError(404, "asset_not_found", "O servidor não encontrou dados deste ticker.");
+      }
+      var symbol = symbolFor(normalized);
+      if (market.findAsset(symbol)) {
+        throw new api.ApiError(409, "duplicate_symbol", "Já existe um ativo com o símbolo " + symbol + ".");
+      }
+      return market.addAsset({
+        s: symbol,
+        tk: normalized,
+        n: quote.name || normalized,
+        u: unitFor(quote.currency),
+        d: 2,
+        data: toCandles(remote.bars),
+        dates: toDates(remote.bars),
+        source: "live",
+      });
+    });
+  }
+
   function status() {
     return currentStatus;
   }
@@ -100,5 +138,6 @@
     applyMacro: applyMacro,
     applySelicSeries: applySelicSeries,
     statusFor: statusFor,
+    addAsset: addAsset,
   };
 });

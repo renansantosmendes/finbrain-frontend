@@ -65,6 +65,11 @@
   var RANGES = { "1M": 21, "3M": 63, "6M": 126, "1A": 252 };
   var MACRO = { selic: 14.75, cdi: 14.65, ipca: 4.3 };
 
+  function addAsset(asset) {
+    ASSETS.push(asset);
+    return asset;
+  }
+
   function findAsset(symbol) {
     return ASSETS.filter(function (asset) { return asset.s === symbol; })[0] || null;
   }
@@ -180,6 +185,7 @@
     ASSETS: ASSETS,
     RANGES: RANGES,
     MACRO: MACRO,
+    addAsset: addAsset,
     findAsset: findAsset,
     searchAsset: searchAsset,
     slice: slice,

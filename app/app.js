@@ -10,6 +10,7 @@
 
   FB.topbar.init(app.querySelector(".stb"));
   FB.screens.dashboards.init(document.getElementById("tab-dashboards"));
+  FB.screens.homebroker.init(document.getElementById("tab-homebroker"));
   FB.screens.simulacoes.init(document.getElementById("tab-simulacoes"));
   FB.screens.brain.init(document.getElementById("tab-brain"));
   FB.screens.transparencia.init(document.getElementById("tab-transparencia"));

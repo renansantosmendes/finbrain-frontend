@@ -4,7 +4,7 @@
 
 V0 of **FinBrain**: a landing page (`index.html`), the login
 (`login/index.html`) and the system (`app/index.html`), a single central
-screen with five tabs (Início, Dashboards, Brain, Simulações,
+screen with six tabs (Início, Dashboards, Homebroker, Brain, Simulações,
 Transparência). Flow: landing -> login -> app (`#inicio`, or the tab in
 the login hash); app logo -> landing, "Sair" -> login. Static HTML, CSS and JavaScript, no
 build step and no framework. Market data comes from the FinBrain server

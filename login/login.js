@@ -8,7 +8,7 @@
   "use strict";
   var FB = (root.FB = root.FB || {});
   var APP = "../app/index.html";
-  var TABS = ["inicio", "dashboards", "brain", "simulacoes", "transparencia"];
+  var TABS = ["inicio", "dashboards", "homebroker", "brain", "simulacoes", "transparencia"];
   var DELAY_MS = 900;
 
   function destination(hash) {

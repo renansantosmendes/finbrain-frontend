@@ -10,7 +10,7 @@
 (function (root) {
   "use strict";
   var FB = (root.FB = root.FB || {});
-  var ORDER = ["inicio", "dashboards", "brain", "simulacoes", "transparencia"];
+  var ORDER = ["inicio", "dashboards", "homebroker", "brain", "simulacoes", "transparencia"];
   var current = null;
 
   function tabButton(name) {
