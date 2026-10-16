@@ -42,6 +42,7 @@ function loadApp(hash, media, server) {
       window.scrollTo = () => {};
       if (media) window.matchMedia = () => media;
       if (server) window.fetch = server.fetch;
+      window.TextDecoder = TextDecoder;
     },
   });
   dom.window.addEventListener("error", (event) => errors.push(event.message));
@@ -521,4 +522,55 @@ test("when the agent is unreachable the Brain answers locally and says so", asyn
   const text = document.getElementById("bm").textContent;
   assert.ok(text.includes("R$ 800/mês"));
   assert.ok(text.includes("O agente FinBrain não respondeu agora"));
+});
+
+function streamResponse(chunks) {
+  const encoder = new TextEncoder();
+  return new ReadableStream({
+    start(controller) {
+      chunks.forEach((chunk) => controller.enqueue(encoder.encode(chunk)));
+      controller.close();
+    },
+  });
+}
+
+test("the Brain shows the agent's answer as it streams and replaces it with the final reply", async () => {
+  const chunks = [
+    'event: tool\ndata: {"name": "get_quote", "status": "start"}\n\nevent: token\ndata: {"text": "Olá"',
+    '}\n\nevent: token\ndata: {"text": ", PETR4"}\n\n',
+    'event: done\ndata: {"session_id": "s1", "reply": "Resposta **final** do agente"}\n\n',
+  ];
+  const server = {
+    calls: [],
+    fetch(url) {
+      server.calls.push(url);
+      return Promise.resolve({ ok: true, status: 200, body: streamResponse(chunks) });
+    },
+  };
+  const { window, document } = loadApp("#brain", null, server);
+  askBrain(document, window, "cotação");
+  await wait(150);
+  const messages = document.querySelectorAll("#bm .msg-a");
+  const finalMessage = messages[messages.length - 1];
+  assert.ok(finalMessage.textContent.includes("Resposta final do agente"));
+  assert.equal(document.querySelector("#bm .is-streaming"), null);
+  assert.ok(finalMessage.querySelector("b"));
+  assert.ok(finalMessage.textContent.includes("get_quote"));
+  assert.ok(server.calls.includes("/agent/chat/stream"));
+});
+
+test("when the stream fails before any text the Brain falls back to the plain request", async () => {
+  const server = {
+    calls: [],
+    fetch(url) {
+      server.calls.push(url);
+      if (url.endsWith("/chat/stream")) return Promise.reject(new TypeError("Failed to fetch"));
+      return Promise.resolve({ ok: true, status: 200, body: null, json: () => Promise.resolve({ session_id: "s2", reply: "Resposta simples" }) });
+    },
+  };
+  const { window, document } = loadApp("#brain", null, server);
+  askBrain(document, window, "ola");
+  await wait(150);
+  assert.ok(document.getElementById("bm").textContent.includes("Resposta simples"));
+  assert.equal(document.querySelector("#bm .is-streaming"), null);
 });

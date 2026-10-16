@@ -86,11 +86,14 @@ async function forwardToAgent(request, response, urlPath) {
       headers,
       body: chunks.length && request.method !== "GET" ? Buffer.concat(chunks) : undefined,
     });
-    const payload = Buffer.from(await upstream.arrayBuffer());
     response.writeHead(upstream.status, {
       "Content-Type": upstream.headers.get("content-type") || "application/octet-stream",
+      "Cache-Control": "no-cache",
     });
-    response.end(payload);
+    if (upstream.body) {
+      for await (const piece of upstream.body) response.write(piece);
+    }
+    response.end();
   } catch (error) {
     response.writeHead(502, { "Content-Type": "application/json; charset=utf-8" })
       .end(JSON.stringify({ code: "agent_unreachable", message: "Não foi possível alcançar o agente: " + error.message }));

@@ -25,15 +25,20 @@
 
   function renderMessages() {
     var box = panel.querySelector("#bm");
+    var streaming = messages.some(function (m) { return m.streaming; });
     box.innerHTML = messages.map(function (m) {
       if (m.role === "user") return '<div class="msg-u">' + esc(m.text) + "</div>";
+      if (m.streaming) {
+        return '<div class="msg-a is-streaming">' + (m.tools && m.tools.length ? tools(m.tools) : "") +
+          '<div class="stream-body">' + formatReply(m.text) + "</div></div>";
+      }
       var r = m.reply;
       return '<div class="msg-a' + (r.cls ? " " + r.cls : "") + '">' +
         (r.tools && r.tools.length ? tools(r.tools) : "") + r.html +
         (r.refs && r.refs.length ? refs(r.refs) : "") +
         (r.goto ? '<div class="goto"><button class="lnk" type="button" data-goto="' + r.goto.tab + '">' + esc(r.goto.label) + " →</button></div>" : "") +
         '<div class="note">' + esc(r.note || "Informativo, não é recomendação de investimento.") + "</div></div>";
-    }).join("") + (busy ? '<div class="typing"><span class="spin"></span>Consultando as fontes…</div>' : "");
+    }).join("") + (busy && !streaming ? '<div class="typing"><span class="spin"></span>Consultando as fontes…</div>' : "");
     box.scrollTop = box.scrollHeight;
   }
 
@@ -124,19 +129,93 @@
     busy = true;
     messages.push({ role: "user", text: text });
     renderMessages();
+    streamAnswer(text);
+  }
+
+  function toolLabel(name) {
+    return name;
+  }
+
+  function agentReply(replyText, toolNames, path, extraNote) {
+    var note = "Resposta do agente FinBrain. Informativo, não é recomendação de investimento.";
+    return {
+      tools: toolNames.length ? toolNames.map(toolLabel) : ["chat · FinBrain Agent"],
+      refs: ["Agente FinBrain · " + path],
+      html: formatReply(replyText),
+      note: extraNote ? note + " " + extraNote : note,
+    };
+  }
+
+  function streamingMessage() {
+    return messages.filter(function (m) { return m.streaming; })[0] || null;
+  }
+
+  function dropStreaming() {
+    messages = messages.filter(function (m) { return !m.streaming; });
+  }
+
+  function showStreaming(live) {
+    var m = streamingMessage();
+    if (!m) {
+      m = { role: "agent", streaming: true, text: "", tools: [] };
+      messages.push(m);
+    }
+    m.text = live.text;
+    m.tools = live.tools.map(toolLabel);
+    renderMessages();
+  }
+
+  function finishAgent(answer, toolNames) {
+    dropStreaming();
+    sessionId = answer.session_id || sessionId;
+    saveSession(sessionId);
+    state.logCall("chat", "FinBrain Agent", "sessão " + sessionId.slice(0, 8));
+    messages.push({ role: "agent", reply: agentReply(answer.reply, toolNames, "/chat/stream") });
+    busy = false;
+    renderMessages();
+  }
+
+  function finishInterrupted(live) {
+    dropStreaming();
+    messages.push({
+      role: "agent",
+      reply: agentReply(live.text, live.tools, "/chat/stream", "A resposta foi interrompida; o texto acima pode estar incompleto."),
+    });
+    busy = false;
+    renderMessages();
+  }
+
+  function streamAnswer(text) {
+    var controller = typeof root.AbortController === "function" ? new root.AbortController() : null;
+    var timer = setTimeout(function () {
+      if (controller) controller.abort();
+    }, AGENT_TIMEOUT_MS);
+    var live = { text: "", tools: [] };
+    FB.api.agentStream(text, sessionId, function (name, data) {
+      if (name === "token") live.text += data.text;
+      else if (name === "tool" && data.status === "start" && live.tools.indexOf(data.name) === -1) live.tools.push(data.name);
+      else return;
+      showStreaming(live);
+    }, controller ? controller.signal : undefined).then(function (answer) {
+      clearTimeout(timer);
+      finishAgent(answer, live.tools);
+    }, function () {
+      clearTimeout(timer);
+      if (live.text) {
+        finishInterrupted(live);
+      } else {
+        dropStreaming();
+        askWithoutStream(text);
+      }
+    });
+  }
+
+  function askWithoutStream(text) {
     withTimeout(FB.api.agentChat(text, sessionId), AGENT_TIMEOUT_MS).then(function (answer) {
       sessionId = answer.session_id || sessionId;
       saveSession(sessionId);
       state.logCall("chat", "FinBrain Agent", "sessão " + sessionId.slice(0, 8));
-      messages.push({
-        role: "agent",
-        reply: {
-          tools: ["chat · FinBrain Agent"],
-          refs: ["Agente FinBrain · /chat"],
-          html: formatReply(answer.reply),
-          note: "Resposta do agente FinBrain. Informativo, não é recomendação de investimento.",
-        },
-      });
+      messages.push({ role: "agent", reply: agentReply(answer.reply, [], "/chat") });
       busy = false;
       renderMessages();
     }, function () {

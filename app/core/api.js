@@ -83,6 +83,66 @@
     return request("POST", "/chat", { message: message, session_id: sessionId || null }, AGENT_BASE);
   }
 
+  function parseSse(buffer) {
+    var blocks = buffer.split("\n\n");
+    var rest = blocks.pop();
+    var events = [];
+    blocks.forEach(function (block) {
+      var name = "message", lines = [];
+      block.split("\n").forEach(function (line) {
+        if (line.indexOf("event:") === 0) name = line.slice(6).trim();
+        else if (line.indexOf("data:") === 0) lines.push(line.slice(5).replace(/^ /, ""));
+      });
+      if (lines.length) events.push({ event: name, data: JSON.parse(lines.join("\n")) });
+    });
+    return { events: events, rest: rest };
+  }
+
+  function agentStream(message, sessionId, onEvent, signal) {
+    var fetcher = root.fetch;
+    if (typeof fetcher !== "function") {
+      return Promise.reject(new ApiError(0, "no_fetch", "Este navegador não permite falar com o agente."));
+    }
+    var options = {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+      body: JSON.stringify({ message: message, session_id: sessionId || null }),
+    };
+    if (signal) options.signal = signal;
+    return fetcher(AGENT_BASE + "/chat/stream", options).then(function (response) {
+      if (!response.ok) throw new ApiError(response.status, "http_error", "O agente respondeu com erro.");
+      if (!response.body || typeof response.body.getReader !== "function") {
+        throw new ApiError(0, "no_stream", "Este navegador não lê respostas em partes.");
+      }
+      var reader = response.body.getReader();
+      var decoder = new root.TextDecoder();
+      var buffer = "", finalAnswer = null, failure = null;
+
+      function pump() {
+        return reader.read().then(function (chunk) {
+          if (chunk.done) return;
+          buffer += decoder.decode(chunk.value, { stream: true });
+          var parsed = parseSse(buffer);
+          buffer = parsed.rest;
+          parsed.events.forEach(function (item) {
+            if (item.event === "done") finalAnswer = item.data;
+            if (item.event === "error") failure = item.data;
+            onEvent(item.event, item.data);
+          });
+          return pump();
+        });
+      }
+
+      return pump().then(function () {
+        if (finalAnswer) return finalAnswer;
+        var reason = failure || {};
+        throw new ApiError(0, reason.code || "stream_incomplete", reason.message || "A resposta do agente foi interrompida.");
+      });
+    }, function () {
+      throw new ApiError(0, "network", "Não foi possível falar com o agente.");
+    });
+  }
+
   function garchAsset(body) {
     return request("POST", "/simulations/garch/asset", body);
   }
@@ -99,5 +159,7 @@
     history: history,
     garchAsset: garchAsset,
     agentChat: agentChat,
+    agentStream: agentStream,
+    parseSse: parseSse,
   };
 });

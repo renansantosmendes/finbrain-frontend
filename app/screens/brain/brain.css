@@ -53,3 +53,8 @@
 #app .msg-a p:last-child{margin-bottom:0}
 #app .msg-a ul{margin:0 0 8px;padding-left:18px}
 #app .msg-a li{margin:2px 0}
+#app .msg-a.is-streaming .stream-body:after{content:"▍";margin-left:2px;color:var(--teal-l);animation:fbCaret 1s steps(2,start) infinite}
+@keyframes fbCaret{to{visibility:hidden}}
+@media (prefers-reduced-motion:reduce){
+  #app .msg-a.is-streaming .stream-body:after{animation:none}
+}
