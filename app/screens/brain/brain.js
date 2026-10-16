@@ -11,7 +11,7 @@
   var state = FB.state, market = FB.market, simulation = FB.simulation;
   var panel, messages = [], busy = false;
   var THINK_DELAY_MS = 750;
-  var AGENT_TIMEOUT_MS = 30000;
+  var AGENT_TIMEOUT_MS = 180000;
   var SESSION_KEY = "finbrain.agentSession";
   var sessionId = loadSession();
 
