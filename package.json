@@ -4,7 +4,7 @@
   "description": "FinBrain V0: landing page and the central screen with tabs (static, no build).",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "serve": "npx --yes serve -l 5500 ."
+    "serve": "node scripts/serve.mjs"
   },
   "devDependencies": {
     "jsdom": "^26.1.0"
