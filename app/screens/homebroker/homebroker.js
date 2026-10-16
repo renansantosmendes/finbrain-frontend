@@ -12,7 +12,7 @@
   var fmt = FB.format.fmt, esc = FB.format.esc, arrow = FB.format.arrow;
   var market = FB.market, state = FB.state, api = FB.api, charts = FB.charts;
   var panel = null, timer = null, requestId = 0, historyAt = 0;
-  var QUOTE_REFRESH_MS = 60000, HISTORY_REFRESH_MS = 300000;
+  var QUOTE_REFRESH_MS = 60000, HISTORY_REFRESH_MS = 55000;
   var session = { sym: "PETR4", quote: null, bars: null, error: "", loading: false };
 
   function selectedAsset() {
@@ -75,10 +75,14 @@
     var asset = selectedAsset(), box = panel.querySelector("#hbChart");
     if (!box || !asset || !session.bars || !session.bars.length) return;
     var closes = session.bars.map(function (bar) { return bar.close; });
+    var times = session.bars.every(function (bar) { return bar.timestamp; })
+      ? session.bars.map(function (bar) { return Date.parse(bar.timestamp); })
+      : null;
     var width = box.clientWidth, height = box.clientHeight;
     box.innerHTML = charts.intraday(closes, {
       size: width && height ? { width: width, height: height } : null,
-      label: "Preço de " + asset.s + " em barras de 5 minutos, no pregão de hoje",
+      label: "Preço de " + asset.s + " em barras de 1 minuto, no pregão de hoje",
+      times: times,
       decimals: asset.d,
       unit: asset.u,
     });
@@ -101,14 +105,14 @@
       var range = session.bars && session.bars.length ? dayRange(session.bars) : null;
       body = priceBlock(session.quote) + statsBlock(session.quote, range) +
         (session.bars && session.bars.length ? chartBlock() : messageBlock("status", "Gráfico intradiário indisponível agora.")) +
-        '<p class="fine">Cotação com cache de 60 segundos no servidor. O gráfico usa barras de 5 minutos, que podem atrasar até 15 minutos e não trazem o horário de cada barra. Informativo, não é recomendação de investimento.</p>';
+        '<p class="fine">Atualizado a cada minuto, com barras de 1 minuto e horário de Brasília. O servidor pode atrasar a última barra em até um minuto. Informativo, não é recomendação de investimento.</p>';
     }
     panel.querySelector("#hb").innerHTML = header() + body;
     drawChart();
   }
 
   function fetchHistory(asset) {
-    return api.history(asset.tk, "1d", "5m").then(function (payload) {
+    return api.history(asset.tk, "1d", "1m").then(function (payload) {
       return payload.bars || [];
     });
   }

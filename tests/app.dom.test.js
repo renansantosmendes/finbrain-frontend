@@ -434,9 +434,9 @@ test("the homebroker shows the day's price, range and an intraday chart from the
   assert.match(document.querySelector("#hb .sk").textContent, /Fechamento anterior58,11/);
   assert.match(document.querySelector("#hb .sk").textContent, /Abertura57,50/);
   assert.ok(document.querySelector("#hb svg.intra polyline.intra-line"));
-  assert.match(document.querySelector("#hb .fine").textContent, /atrasar até 15 minutos/);
+  assert.match(document.querySelector("#hb .fine").textContent, /barras de 1 minuto/);
   assert.ok(server.calls.some((call) => call.path === "/api/v1/assets/PETR4.SA/quote"));
-  assert.ok(server.calls.some((call) => call.path.startsWith("/api/v1/assets/PETR4.SA/history?period=1d&interval=5m")));
+  assert.ok(server.calls.some((call) => call.path.startsWith("/api/v1/assets/PETR4.SA/history?period=1d&interval=1m")));
 });
 
 test("changing the homebroker asset requests that asset's quote", async () => {
