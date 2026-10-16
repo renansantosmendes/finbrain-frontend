@@ -139,7 +139,7 @@
 @keyframes fbTabIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes fbFadeIn{from{opacity:.25}to{opacity:1}}
 #app .tab{transition:color .2s ease,border-color .2s ease}
-#app .tabpanel:not([hidden]){animation:fbTabIn .34s cubic-bezier(.2,.7,.2,1) both}
+#app .tabpanel:not([hidden]){animation:fbTabIn .5s cubic-bezier(.2,.7,.2,1) both}
 #app .tabpanel .pn{transition:opacity .2s ease}
 @media (prefers-reduced-motion:reduce){
   #app .tabpanel:not([hidden]),#app .tabpanel *,#app .tab{animation:none!important;transition:none!important}

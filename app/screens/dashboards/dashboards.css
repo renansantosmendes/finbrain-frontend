@@ -81,7 +81,7 @@
 
 /* Filters: only the main chart fades in when it is redrawn; the rest stays static */
 @keyframes fbFilterIn{from{opacity:.3}to{opacity:1}}
-#app #asset .chart > svg{animation:fbFilterIn .28s ease both}
+#app #asset .chart > svg{animation:fbFilterIn .5s ease both}
 #app .seg button,#app .ck,#app .tbtn,#app .wdrop-item{transition:background-color .2s ease,color .2s ease,border-color .2s ease}
 @media (prefers-reduced-motion:reduce){
   #app #asset .chart > svg{animation:none}
