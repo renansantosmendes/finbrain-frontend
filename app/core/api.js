@@ -13,6 +13,9 @@
   "use strict";
 
   var BASE_URL = "https://finbrain-server.vercel.app/api/v1";
+  // The agent does not send CORS headers, so the browser reaches it through
+  // the rewrite in vercel.json (/agent/* -> finbrain-agent.vercel.app/*).
+  var AGENT_BASE = "/agent";
 
   function ApiError(status, code, message) {
     this.name = "ApiError";
@@ -31,7 +34,7 @@
     return search.toString();
   }
 
-  function request(method, path, body) {
+  function request(method, path, body, base) {
     var fetcher = root.fetch;
     if (typeof fetcher !== "function") {
       return Promise.reject(new ApiError(0, "no_fetch", "Este navegador não permite falar com o servidor."));
@@ -41,7 +44,7 @@
       options.headers["Content-Type"] = "application/json";
       options.body = JSON.stringify(body);
     }
-    return fetcher(BASE_URL + path, options).then(
+    return fetcher((base || BASE_URL) + path, options).then(
       function (response) {
         return response.json().catch(function () { return {}; }).then(function (payload) {
           if (!response.ok) {
@@ -76,6 +79,10 @@
     return request("GET", "/assets/" + encodeURIComponent(ticker) + "/history?" + query({ period: period, interval: interval }));
   }
 
+  function agentChat(message, sessionId) {
+    return request("POST", "/chat", { message: message, session_id: sessionId || null }, AGENT_BASE);
+  }
+
   function garchAsset(body) {
     return request("POST", "/simulations/garch/asset", body);
   }
@@ -91,5 +98,6 @@
     quote: quote,
     history: history,
     garchAsset: garchAsset,
+    agentChat: agentChat,
   };
 });

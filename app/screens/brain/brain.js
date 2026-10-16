@@ -11,6 +11,9 @@
   var state = FB.state, market = FB.market, simulation = FB.simulation;
   var panel, messages = [], busy = false;
   var THINK_DELAY_MS = 750;
+  var AGENT_TIMEOUT_MS = 30000;
+  var SESSION_KEY = "finbrain.agentSession";
+  var sessionId = loadSession();
 
   function tools(list) {
     return '<div class="tools">' + list.map(function (x) { return '<span class="tool">⚙ ' + esc(x) + "</span>"; }).join("") + "</div>";
@@ -59,6 +62,61 @@
       '<div class="ctx-actions"><button class="lnk" type="button" data-goto="transparencia">Ver a trilha completa →</button></div>';
   }
 
+  function newSessionId() {
+    if (root.crypto && root.crypto.randomUUID) return root.crypto.randomUUID();
+    return "fb-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+  }
+
+  function loadSession() {
+    try {
+      var saved = root.sessionStorage.getItem(SESSION_KEY);
+      if (saved) return saved;
+    } catch (error) {
+      /* storage unavailable: the session lasts only for this page */
+    }
+    return newSessionId();
+  }
+
+  function saveSession(id) {
+    try {
+      root.sessionStorage.setItem(SESSION_KEY, id);
+    } catch (error) {
+      /* storage unavailable: the session lasts only for this page */
+    }
+  }
+
+  function withTimeout(promise, ms) {
+    return new Promise(function (resolve, reject) {
+      var timer = setTimeout(function () { reject(new Error("timeout")); }, ms);
+      promise.then(function (value) {
+        clearTimeout(timer);
+        resolve(value);
+      }, function (error) {
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
+  }
+
+  function formatReply(text) {
+    var html = "", inList = false;
+    String(text || "").split("\n").forEach(function (raw) {
+      var trimmed = raw.trim();
+      var bullet = /^[-•*]\s+/.test(trimmed);
+      var line = esc(bullet ? trimmed.replace(/^[-•*]\s+/, "") : trimmed).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+      if (bullet) {
+        if (!inList) html += "<ul>";
+        inList = true;
+        html += "<li>" + line + "</li>";
+        return;
+      }
+      if (inList) html += "</ul>";
+      inList = false;
+      if (line) html += "<p>" + line + "</p>";
+    });
+    return html + (inList ? "</ul>" : "");
+  }
+
   function ask(question, options) {
     var text = String(question || "").trim();
     if (options && options.openTab) FB.tabs.open("brain");
@@ -66,12 +124,35 @@
     busy = true;
     messages.push({ role: "user", text: text });
     renderMessages();
+    withTimeout(FB.api.agentChat(text, sessionId), AGENT_TIMEOUT_MS).then(function (answer) {
+      sessionId = answer.session_id || sessionId;
+      saveSession(sessionId);
+      state.logCall("chat", "FinBrain Agent", "sessão " + sessionId.slice(0, 8));
+      messages.push({
+        role: "agent",
+        reply: {
+          tools: ["chat · FinBrain Agent"],
+          refs: ["Agente FinBrain · /chat"],
+          html: formatReply(answer.reply),
+          note: "Resposta do agente FinBrain. Informativo, não é recomendação de investimento.",
+        },
+      });
+      busy = false;
+      renderMessages();
+    }, function () {
+      answerLocally(text);
+    });
+  }
+
+  function answerLocally(text) {
     setTimeout(function () {
       var data = state.data;
       var result = FB.brainEngine.think(text, { sym: data.sym, rng: data.rng, sim: data.sim });
       if (result.changes.asset) state.setAsset(result.changes.asset);
       if (result.changes.sim) state.setSim(result.changes.sim);
       result.calls.forEach(function (call) { state.logCall(call[0], call[1], call[2]); });
+      var note = "O agente FinBrain não respondeu agora; esta é a resposta do cálculo local.";
+      result.reply.note = result.reply.note ? result.reply.note + " " + note : note;
       messages.push({ role: "agent", reply: result.reply });
       busy = false;
       renderMessages();

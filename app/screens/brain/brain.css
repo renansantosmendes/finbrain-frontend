@@ -49,3 +49,7 @@
 @media (pointer:coarse){
   #app .bf textarea{font-size:16px}
 }
+#app .msg-a p{margin:0 0 8px}
+#app .msg-a p:last-child{margin-bottom:0}
+#app .msg-a ul{margin:0 0 8px;padding-left:18px}
+#app .msg-a li{margin:2px 0}

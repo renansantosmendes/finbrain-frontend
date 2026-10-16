@@ -126,7 +126,7 @@ function garchFixture(horizonDays, ticker, pathCount) {
 function serverStub(reply) {
   const calls = [];
   const fetch = (url, options = {}) => {
-    const parsed = new URL(url);
+    const parsed = new URL(url, "http://localhost/app/");
     const body = options.body ? JSON.parse(options.body) : null;
     calls.push({ method: options.method || "GET", path: parsed.pathname + parsed.search, body });
     const answer = reply(parsed.pathname, body, parsed.searchParams);
@@ -481,3 +481,44 @@ test("adding a ticker asks the server and puts it in the watchlist", async () =>
   assert.match(document.querySelector('#wlPicker [data-watch="BBAS3"]').parentNode.textContent, /Banco do Brasil ON/);
 });
 
+
+function agentServer(reply) {
+  return serverStub((pathname, body) => {
+    if (pathname.endsWith("/chat")) return reply(body);
+    return { status: 404, body: { code: "not_found", message: "Nao encontrado." } };
+  });
+}
+
+function askBrain(document, window, text) {
+  document.getElementById("bq").value = text;
+  document.getElementById("bf").dispatchEvent(new window.Event("submit", { cancelable: true, bubbles: true }));
+}
+
+test("the Brain sends questions to the agent and shows its formatted reply", async () => {
+  const server = agentServer((body) => ({
+    status: 200,
+    body: { session_id: body.session_id || "s1", reply: "Resposta **importante** do agente" + String.fromCharCode(10) + "- primeiro item" + String.fromCharCode(10) + "- segundo item" },
+  }));
+  const { window, document } = loadApp("#brain", null, server);
+  askBrain(document, window, "ola");
+  await wait(120);
+  const messages = document.querySelectorAll("#bm .msg-a");
+  const message = messages[messages.length - 1];
+  assert.ok(message.textContent.includes("Resposta importante do agente"));
+  assert.equal(message.querySelectorAll("li").length, 2);
+  assert.ok(message.querySelector("b"));
+  assert.ok(message.textContent.includes("Resposta do agente FinBrain"));
+  const sent = server.calls.find((call) => call.path === "/agent/chat");
+  assert.equal(sent.body.message, "ola");
+  assert.ok(sent.body.session_id);
+});
+
+test("when the agent is unreachable the Brain answers locally and says so", async () => {
+  const server = { calls: [], fetch: () => Promise.reject(new TypeError("Failed to fetch")) };
+  const { window, document } = loadApp("#brain", null, server);
+  askBrain(document, window, "Simule aporte de R$ 800 por 15 anos");
+  await wait(900);
+  const text = document.getElementById("bm").textContent;
+  assert.ok(text.includes("R$ 800/mês"));
+  assert.ok(text.includes("O agente FinBrain não respondeu agora"));
+});
