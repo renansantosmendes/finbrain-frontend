@@ -9,8 +9,11 @@
   var FB = root.FB;
   var esc = FB.format.esc, fmt = FB.format.fmt, arrow = FB.format.arrow, trend = FB.format.trend, money = FB.format.money;
   var state = FB.state, market = FB.market, simulation = FB.simulation;
-  var panel, messages = [], busy = false;
+  var panel, messages = [], busy = false, thinkingLabel = "";
   var THINK_DELAY_MS = 750;
+  var THINKING_LABEL = "Pensando…";
+  var ELABORATING_LABEL = "Elaborando uma resposta…";
+  var THINKING_STEP_MS = 2500;
   var AGENT_TIMEOUT_MS = 180000;
   var SESSION_KEY = "finbrain.agentSession";
   var sessionId = loadSession();
@@ -37,8 +40,8 @@
         (r.tools && r.tools.length ? tools(r.tools) : "") + r.html +
         (r.refs && r.refs.length ? refs(r.refs) : "") +
         (r.goto ? '<div class="goto"><button class="lnk" type="button" data-goto="' + r.goto.tab + '">' + esc(r.goto.label) + " →</button></div>" : "") +
-        '<div class="note">' + esc(r.note || "Informativo, não é recomendação de investimento.") + "</div></div>";
-    }).join("") + (busy && !streaming ? '<div class="typing"><span class="spin"></span>Consultando as fontes…</div>' : "");
+        (r.note === null ? "" : '<div class="note">' + esc(r.note || "Informativo, não é recomendação de investimento.") + "</div>") + "</div>";
+    }).join("") + (busy && !streaming ? '<div class="typing"><span class="spin"></span>' + thinkingLabel + "</div>" : "");
     box.scrollTop = box.scrollHeight;
   }
 
@@ -127,8 +130,14 @@
     if (options && options.openTab) FB.tabs.open("brain");
     if (busy || !text) return;
     busy = true;
+    thinkingLabel = THINKING_LABEL;
     messages.push({ role: "user", text: text });
     renderMessages();
+    setTimeout(function () {
+      if (!busy) return;
+      thinkingLabel = ELABORATING_LABEL;
+      renderMessages();
+    }, THINKING_STEP_MS);
     streamAnswer(text);
   }
 
@@ -137,12 +146,11 @@
   }
 
   function agentReply(replyText, toolNames, path, extraNote) {
-    var note = "Resposta do agente FinBrain. Informativo, não é recomendação de investimento.";
     return {
       tools: toolNames.length ? toolNames.map(toolLabel) : ["chat · FinBrain Agent"],
-      refs: ["Agente FinBrain · " + path],
+      refs: [],
       html: formatReply(replyText),
-      note: extraNote ? note + " " + extraNote : note,
+      note: extraNote || null,
     };
   }
 

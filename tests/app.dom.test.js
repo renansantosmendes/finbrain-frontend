@@ -296,7 +296,7 @@ test("asking the Brain for a simulation answers locally and records the trail", 
   const input = document.getElementById("bq");
   input.value = "Simule aporte de R$ 800 por 15 anos";
   document.getElementById("bf").dispatchEvent(new document.defaultView.Event("submit", { cancelable: true }));
-  assert.match(document.getElementById("bm").textContent, /Consultando as fontes/);
+  assert.match(document.getElementById("bm").textContent, /Pensando/);
   await wait(900);
   assert.match(document.getElementById("bm").textContent, /R\$ 800\/mês/);
   assert.equal(document.querySelector('#bm [data-goto="simulacoes"]'), null);
@@ -508,7 +508,8 @@ test("the Brain sends questions to the agent and shows its formatted reply", asy
   assert.ok(message.textContent.includes("Resposta importante do agente"));
   assert.equal(message.querySelectorAll("li").length, 2);
   assert.ok(message.querySelector("b"));
-  assert.ok(message.textContent.includes("Resposta do agente FinBrain"));
+  assert.equal(message.querySelector(".refs"), null);
+  assert.equal(message.querySelector(".note"), null);
   const sent = server.calls.find((call) => call.path === "/agent/chat");
   assert.equal(sent.body.message, "ola");
   assert.ok(sent.body.session_id);
