@@ -17,7 +17,7 @@
 
   var GREETING = {
     tools: [],
-    html: "Olá! Sou o <b>Brain</b>. Busco dados de mercado, explico o que aconteceu e simulo cenários. <b>Não recomendo</b> compra ou venda. Escolha um ativo no painel ou pergunte algo.",
+    html: "Olá! Sou o <b>FinAgent</b>. Busco dados de mercado, explico o que aconteceu e simulo cenários. <b>Não recomendo</b> compra ou venda. Escolha um ativo no painel ou pergunte algo.",
     refs: [],
     note: "Todas as chamadas ficam registradas na aba Transparência.",
   };
