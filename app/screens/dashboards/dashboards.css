@@ -78,3 +78,11 @@
 #app .wdrop-add .fl{flex:1;min-width:200px}
 #app .wdrop-add input{height:38px;padding:0 8px;border:1px solid var(--line-d);border-radius:2px;background:transparent;color:var(--white);font:inherit}
 #app .wdrop-msg{grid-column:1/-1;margin:0;color:var(--tx-d1)}
+
+/* Filters: the chart, macro panel and watchlist fade in when they are redrawn */
+@keyframes fbFilterIn{from{opacity:.3}to{opacity:1}}
+#app #asset > *,#app #macro > *,#app #wlb tr{animation:fbFilterIn .28s ease both}
+#app .seg button,#app .ck,#app .tbtn,#app .wdrop-item{transition:background-color .2s ease,color .2s ease,border-color .2s ease}
+@media (prefers-reduced-motion:reduce){
+  #app #asset > *,#app #macro > *,#app #wlb tr{animation:none}
+}
