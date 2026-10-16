@@ -575,3 +575,32 @@ test("when the stream fails before any text the Brain falls back to the plain re
   assert.ok(document.getElementById("bm").textContent.includes("Resposta simples"));
   assert.equal(document.querySelector("#bm .is-streaming"), null);
 });
+
+test("while a tool runs the waiting indicator says what the agent is doing", async () => {
+  const encoder = new TextEncoder();
+  let controllerRef = null;
+  const body = new ReadableStream({
+    start(controller) {
+      controllerRef = controller;
+      controller.enqueue(encoder.encode('event: tool\ndata: {"name": "collect_yfinance_data", "status": "start", "input": {"ticker": "PETR4.SA"}}\n\n'));
+    },
+  });
+  const server = {
+    calls: [],
+    fetch(url) {
+      server.calls.push(url);
+      return Promise.resolve({ ok: true, status: 200, body });
+    },
+  };
+  const { window, document } = loadApp("#brain", null, server);
+  askBrain(document, window, "cotação da PETR4");
+  await wait(120);
+  assert.ok(document.querySelector("#bm .typing").textContent.includes("Coletando dados da ação PETR4.SA"));
+  controllerRef.enqueue(encoder.encode('event: tool\ndata: {"name": "collect_yfinance_data", "status": "end"}\n\n'));
+  controllerRef.enqueue(encoder.encode('event: done\ndata: {"session_id": "s3", "reply": "PETR4 em alta"}\n\n'));
+  controllerRef.close();
+  await wait(150);
+  assert.equal(document.querySelector("#bm .typing"), null);
+  assert.ok(document.querySelector("#bm .tool").textContent.includes("Coletando dados da ação PETR4.SA"));
+  assert.ok(document.getElementById("bm").textContent.includes("PETR4 em alta"));
+});

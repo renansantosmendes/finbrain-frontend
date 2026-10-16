@@ -28,7 +28,7 @@
 
   function renderMessages() {
     var box = panel.querySelector("#bm");
-    var streaming = messages.some(function (m) { return m.streaming; });
+    var streamingNow = streamingMessage();
     box.innerHTML = messages.map(function (m) {
       if (m.role === "user") return '<div class="msg-u">' + esc(m.text) + "</div>";
       if (m.streaming) {
@@ -41,7 +41,9 @@
         (r.refs && r.refs.length ? refs(r.refs) : "") +
         (r.goto ? '<div class="goto"><button class="lnk" type="button" data-goto="' + r.goto.tab + '">' + esc(r.goto.label) + " →</button></div>" : "") +
         (r.note === null ? "" : '<div class="note">' + esc(r.note || "Informativo, não é recomendação de investimento.") + "</div>") + "</div>";
-    }).join("") + (busy && !streaming ? '<div class="typing"><span class="spin"></span>' + thinkingLabel + "</div>" : "");
+    }).join("") + (busy && (!streamingNow || streamingNow.activeTool || !streamingNow.text)
+      ? '<div class="typing"><span class="spin"></span>' + esc((streamingNow && streamingNow.activeTool) || thinkingLabel) + "</div>"
+      : "");
     box.scrollTop = box.scrollHeight;
   }
 
@@ -170,6 +172,7 @@
     }
     m.text = live.text;
     m.tools = live.tools.map(toolLabel);
+    m.activeTool = live.activeTool || null;
     renderMessages();
   }
 
@@ -200,9 +203,17 @@
     }, AGENT_TIMEOUT_MS);
     var live = { text: "", tools: [] };
     FB.api.agentStream(text, sessionId, function (name, data) {
-      if (name === "token") live.text += data.text;
-      else if (name === "tool" && data.status === "start" && live.tools.indexOf(data.name) === -1) live.tools.push(data.name);
-      else return;
+      if (name === "token") {
+        live.text += data.text;
+      } else if (name === "tool" && data.status === "start") {
+        var description = FB.agentTools.describe(data.name, data.input);
+        live.activeTool = description;
+        if (live.tools.indexOf(description) === -1) live.tools.push(description);
+      } else if (name === "tool" && data.status === "end") {
+        live.activeTool = null;
+      } else {
+        return;
+      }
       showStreaming(live);
     }, controller ? controller.signal : undefined).then(function (answer) {
       clearTimeout(timer);
